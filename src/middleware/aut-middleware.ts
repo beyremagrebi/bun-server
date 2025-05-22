@@ -22,7 +22,6 @@ export async function authMiddleware(req: Request) {
 
     return req;
   } catch (err) {
-    console.error("Error in authMiddleware:", err);
-    return ResponseHelper.error("Internal server error");
+    return ResponseHelper.serverError("Internal server error : " + String(err));
   }
 }

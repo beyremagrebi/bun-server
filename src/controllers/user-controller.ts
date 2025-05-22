@@ -7,6 +7,7 @@ import { paginationMiddleware } from "../middleware/pagination-middleware";
 import { CollectionsManager } from "../models/base/collection-manager";
 import { ResponseHelper } from "../utils/response-helper";
 import { BaseController } from "./base/base-controller";
+import { authMiddleware } from "../middleware/aut-middleware";
 
 class UserController extends BaseController<User> {
   constructor() {
@@ -30,7 +31,7 @@ class UserController extends BaseController<User> {
     }
   }
 
-  @Get("/getAll", [paginationMiddleware])
+  @Get("/getAll", [authMiddleware, paginationMiddleware])
   getAll(req: Request): Promise<Response> {
     return super.getAll(req);
   }

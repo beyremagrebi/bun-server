@@ -4,6 +4,9 @@ import { routes, type RouteDefinition } from "../types/route-types";
 import { ResponseHelper } from "../utils/response-helper";
 
 type RouteHandler = (req: Request) => Response | Promise<Response>;
+export interface CustomRequest extends Request {
+  params?: Record<string, string>;
+}
 
 export class Router<T extends Document> {
   private controllers: BaseController<T>[] = [];
@@ -11,6 +14,24 @@ export class Router<T extends Document> {
   private routeHandlers: Map<string, Map<string, RouteHandler>> = new Map();
 
   constructor() {}
+
+  private extractParams(
+    routePath: string,
+    actualPath: string,
+  ): Record<string, string> {
+    const routeParts = routePath.split("/");
+    const pathParts = actualPath.split("/");
+    const params: Record<string, string> = {};
+
+    routeParts.forEach((part, i) => {
+      if (part.startsWith(":")) {
+        const key = part.slice(1);
+        params[key] = decodeURIComponent(pathParts[i] || "");
+      }
+    });
+
+    return params;
+  }
 
   registerController(Controller: new () => BaseController<T>) {
     const controller = new Controller();
@@ -107,13 +128,24 @@ export class Router<T extends Document> {
       if (this.pathMatches(routePath, path)) {
         const handler = methodHandlers.get(method);
         if (handler) {
+          const params = this.extractParams(routePath, path);
+          const updatedReq = new Request(req.url, {
+            method: req.method,
+            headers: req.headers,
+            body: req.body,
+          });
+
+          // Add `params` to the request object via symbol or monkey-patching
+          (updatedReq as CustomRequest).params = params;
+
           handlerFound = true;
-          response = await handler(req);
+          response = await handler(updatedReq);
           console.log(`${method} ${response.status} ${path}`);
           return response;
         }
       }
     }
+
     if (!handlerFound) {
       response = new Response(`Not Found: ${path}`, { status: 404 });
       console.log(`${method} ${response.status} ${path}`);

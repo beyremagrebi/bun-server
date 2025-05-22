@@ -21,8 +21,7 @@ export async function verifyToken(
   try {
     const decoded = jwt.verify(token, Bun.env.JWT_SECRET!);
     return decoded;
-  } catch (err) {
-    console.log(err);
-    return ResponseHelper.unauthorized("Invalid token");
+  } catch (e) {
+    return ResponseHelper.unauthorized("Token invalid : " + String(e));
   }
 }

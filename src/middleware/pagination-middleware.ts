@@ -25,15 +25,7 @@ export async function paginationMiddleware(
 
     return reqWithPagination;
   } catch (error) {
-    return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : String(error),
-      }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
+    return ResponseHelper.serverError(String(error));
   }
 }
 
