@@ -1,7 +1,6 @@
-import type { Document, ObjectId } from "mongodb";
+import type { BaseModel } from "./base/base-model";
 
-export interface Post extends Document {
-  _id?: ObjectId;
+export interface Post extends BaseModel {
   label: string;
   description: string;
 }

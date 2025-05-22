@@ -2,6 +2,7 @@ import { Collection, MongoClient } from "mongodb";
 import { EnvLoader } from "./env";
 import type { User } from "../models/user";
 import type { Post } from "../models/post";
+import { CollectionsManager } from "../models/base/collection-manager";
 
 // Database connection and collections
 let client: MongoClient;
@@ -16,13 +17,7 @@ export class ConnectionDatabase {
       }
 
       client = await MongoClient.connect(uri);
-      userCollection = client
-        .db(EnvLoader.databaseName)
-        .collection<User>("users");
-
-      postCollection = client
-        .db(EnvLoader.databaseName)
-        .collection<Post>("posts");
+      CollectionsManager.initializeCollections(client);
     } catch (error) {
       console.error("MongoDB connection error:", error);
       throw error;
@@ -41,6 +36,3 @@ export class ConnectionDatabase {
     }
   }
 }
-
-// Export the userCollection getter
-export { userCollection, postCollection };

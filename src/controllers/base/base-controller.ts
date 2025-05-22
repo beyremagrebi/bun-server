@@ -1,6 +1,6 @@
 import type { Collection, Document, OptionalUnlessRequiredId } from "mongodb";
-import { Get, Post } from "../routes/router-manager";
-import { ResponseHelper } from "../utils/response-helper";
+import { Get, Post } from "../../routes/router-manager";
+import { ResponseHelper } from "../../utils/response-helper";
 
 export abstract class BaseController<T extends Document> {
   protected collection: Collection<T>;

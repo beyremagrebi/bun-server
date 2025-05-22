@@ -1,5 +1,5 @@
 import type { Document } from "mongodb";
-import type { BaseController } from "../controllers/base-controller";
+import type { BaseController } from "../controllers/base/base-controller";
 import { Router } from "./router";
 
 export class Registred<T extends Document> {

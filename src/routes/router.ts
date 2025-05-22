@@ -1,7 +1,7 @@
 import type { Document } from "mongodb";
-import type { BaseController } from "../controllers/base-controller";
+import type { BaseController } from "../controllers/base/base-controller";
 import { ResponseHelper } from "../utils/response-helper";
-import { routes, type RouteDefinition } from "./router-manager";
+import { routes, type RouteDefinition } from "../types/route-types";
 
 type RouteHandler = (req: Request) => Response | Promise<Response>;
 

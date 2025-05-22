@@ -1,16 +1,16 @@
 import type { Collection } from "mongodb";
-import { postCollection } from "../config/connection-database";
 import type { Post as PostModel } from "../models/post";
 import { Get, Post } from "../routes/router-manager";
 
-import { BaseController } from "./base-controller";
+import { CollectionsManager } from "../models/base/collection-manager";
+import { BaseController } from "./base/base-controller";
 
 class PostController extends BaseController<PostModel> {
   constructor() {
     super("/post");
   }
   protected initializeCollection(): Collection<PostModel> {
-    return postCollection;
+    return CollectionsManager.postCollection;
   }
   @Post("/add-Post")
   create(req: Request): Promise<Response> {

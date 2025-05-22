@@ -1,10 +1,9 @@
 import { EnvLoader } from "./config/env";
 import { ServerStarter } from "./config/server-starter";
-import PostController from "./controllers/post-controller";
-import UserController from "./controllers/user-controller";
+import { ControllerManager } from "./controllers/base/controller-manager";
 
 const server = new ServerStarter(
-  [UserController, PostController],
+  ControllerManager.getAllControllers(),
   Number(EnvLoader.port),
 );
 server.start();

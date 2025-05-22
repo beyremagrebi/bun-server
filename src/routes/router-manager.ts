@@ -1,23 +1,10 @@
 import type { Document } from "mongodb";
-
-export type RouteDefinition<T extends Document> = {
-  path: string;
-  method: string;
-  handlerName: keyof T;
-  middleware?: ExpressMiddleware[];
-};
-
-type ExpressMiddleware = (req: Request) => void;
-export type MiddlewareFunction = (
-  req: Request,
-) => Promise<Request | Response | boolean | void>;
-
-type Constructor<T extends Document> = new (...args: Document[]) => T;
-
-export const routes = new Map<
-  Constructor<Document>,
-  RouteDefinition<Document>[]
->();
+import {
+  routes,
+  type Constructor,
+  type ExpressMiddleware,
+  type RouteDefinition,
+} from "../types/route-types";
 
 function createMethodDecorator(method: string) {
   return <T extends Document>(

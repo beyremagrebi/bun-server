@@ -1,7 +1,6 @@
-import type { Document, ObjectId } from "mongodb";
+import type { BaseModel } from "./base/base-model";
 
-export interface User extends Document {
-  _id?: ObjectId;
+export interface User extends BaseModel {
   firstName: string;
   lastName: string;
   email: string;

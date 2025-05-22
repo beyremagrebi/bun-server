@@ -1,5 +1,5 @@
 import Bun from "bun"; // Declare the Bun variable
-import type { BaseController } from "../controllers/base-controller";
+import type { BaseController } from "../controllers/base/base-controller";
 import type { IServerStarter } from "../interfaces/i-server-starter";
 import { Registred } from "../routes/registred";
 import { ConnectionDatabase } from "./connection-database";
