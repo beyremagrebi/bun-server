@@ -7,7 +7,7 @@ repos:
   - repo: local
     hooks:
       - id: bun-lints
-        name: dart lints
+        name: bun lints
         entry: bun
         args: ["run", "lint"]
         language: system
