@@ -1,7 +1,12 @@
 import type { Collection, Document, OptionalUnlessRequiredId } from "mongodb";
 import { Get, Post } from "../../routes/router-manager";
 import { ResponseHelper } from "../../utils/response-helper";
+import { autoPaginateResponse } from "../../middleware/pagination-middleware";
+import type { PaginationResult } from "../../interfaces/i-pagination";
 
+interface RequestWithPagination extends Request {
+  pagination?: PaginationResult;
+}
 export abstract class BaseController<T extends Document> {
   protected collection: Collection<T>;
   public basePath: string;
@@ -14,10 +19,21 @@ export abstract class BaseController<T extends Document> {
   protected abstract initializeCollection(): Collection<T>;
 
   @Get("/")
-  async getAll(): Promise<Response> {
+  async getAll(req: RequestWithPagination): Promise<Response> {
     try {
-      const items = await this.collection.find().toArray();
-      return ResponseHelper.success(items);
+      const pagination = req.pagination;
+
+      let cursor = this.collection.find();
+
+      if (pagination) {
+        cursor = cursor.skip(pagination.skip).limit(pagination.take);
+      }
+
+      return autoPaginateResponse(
+        req,
+        cursor.toArray(),
+        this.collection.countDocuments(),
+      );
     } catch (error) {
       return ResponseHelper.serverError(String(error));
     }

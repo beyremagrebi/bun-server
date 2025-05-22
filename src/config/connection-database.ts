@@ -1,13 +1,8 @@
-import { Collection, MongoClient } from "mongodb";
-import { EnvLoader } from "./env";
-import type { User } from "../models/user";
-import type { Post } from "../models/post";
+import { MongoClient } from "mongodb";
 import { CollectionsManager } from "../models/base/collection-manager";
 
 // Database connection and collections
 let client: MongoClient;
-let userCollection: Collection<User>;
-let postCollection: Collection<Post>;
 
 export class ConnectionDatabase {
   static async connect(uri: string): Promise<void> {

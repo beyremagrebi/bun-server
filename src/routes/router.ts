@@ -1,7 +1,7 @@
 import type { Document } from "mongodb";
 import type { BaseController } from "../controllers/base/base-controller";
-import { ResponseHelper } from "../utils/response-helper";
 import { routes, type RouteDefinition } from "../types/route-types";
+import { ResponseHelper } from "../utils/response-helper";
 
 type RouteHandler = (req: Request) => Response | Promise<Response>;
 
@@ -59,28 +59,17 @@ export class Router<T extends Document> {
     methodMap.set(route.method, async (req: Request) => {
       let request = req;
       for (const middleware of middlewareChain) {
-        try {
-          const result = middleware(request);
+        const result = await middleware(request);
 
-          if (result === undefined || result === null) {
-            continue;
-          }
+        if (this.isResponse(result)) {
+          return result;
+        }
 
-          if (this.isResponse(result)) {
-            return result;
-          }
-
-          if (this.isRequest(result)) {
-            request = result;
-            continue;
-          }
-
-          console.warn("Middleware returned unexpected value:", result);
-        } catch (error) {
-          console.error("Middleware error:", error);
-          return ResponseHelper.error("Internal Server Error");
+        if (this.isRequest(result)) {
+          request = result;
         }
       }
+
       try {
         return await handler(request);
       } catch (error) {

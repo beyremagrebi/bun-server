@@ -17,8 +17,8 @@ class PostController extends BaseController<PostModel> {
     return super.create(req);
   }
   @Get("/getAll")
-  getAll(): Promise<Response> {
-    return super.getAll();
+  getAll(req: Request): Promise<Response> {
+    return super.getAll(req);
   }
 }
 
