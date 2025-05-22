@@ -11,3 +11,11 @@ repos:
         entry: bun
         args: ["run", "lint"]
         language: system
+
+      - id: bun-prettier
+        name: prettier
+        entry: bash
+        args:
+          - -c
+          - bun prettier --write ./src
+        language: system

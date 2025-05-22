@@ -9,17 +9,12 @@ export class ResponseHelper {
    * @returns Response object
    */
   static success<T>(data: T, status = 200): Response {
-    return new Response(
-      JSON.stringify(
-        data,
-      ),
-      {
-        status,
-        headers: {
-          "Content-Type": "application/json",
-        },
+    return new Response(JSON.stringify(data), {
+      status,
+      headers: {
+        "Content-Type": "application/json",
       },
-    )
+    });
   }
 
   /**
@@ -29,7 +24,7 @@ export class ResponseHelper {
    * @param errors Additional error details (optional)
    * @returns Response object
    */
-  static error(message: string, status = 400, errors?: any): Response {
+  static error(message: string, status = 400, errors?: object): Response {
     return new Response(
       JSON.stringify({
         success: false,
@@ -45,7 +40,7 @@ export class ResponseHelper {
           "Content-Type": "application/json",
         },
       },
-    )
+    );
   }
 
   /**
@@ -54,7 +49,7 @@ export class ResponseHelper {
    * @returns Response object
    */
   static notFound(message = "Resource not found"): Response {
-    return this.error(message, 404)
+    return this.error(message, 404);
   }
 
   /**
@@ -63,7 +58,7 @@ export class ResponseHelper {
    * @returns Response object
    */
   static unauthorized(message = "Unauthorized"): Response {
-    return this.error(message, 401)
+    return this.error(message, 401);
   }
 
   /**
@@ -72,7 +67,7 @@ export class ResponseHelper {
    * @returns Response object
    */
   static forbidden(message = "Forbidden"): Response {
-    return this.error(message, 403)
+    return this.error(message, 403);
   }
 
   /**
@@ -81,7 +76,7 @@ export class ResponseHelper {
    * @returns Response object
    */
   static serverError(message = "Internal Server Error"): Response {
-    return this.error(message, 500)
+    return this.error(message, 500);
   }
 
   /**
@@ -90,7 +85,7 @@ export class ResponseHelper {
    * @returns Response object
    */
   static created<T>(data: T): Response {
-    return this.success(data, 201)
+    return this.success(data, 201);
   }
 
   /**
@@ -98,7 +93,7 @@ export class ResponseHelper {
    * @returns Response object
    */
   static noContent(): Response {
-    return new Response(null, { status: 204 })
+    return new Response(null, { status: 204 });
   }
 
   /**
@@ -109,8 +104,13 @@ export class ResponseHelper {
    * @param total Total number of items
    * @returns Response object
    */
-  static paginated<T>(data: T[], page: number, limit: number, total: number): Response {
-    const totalPages = Math.ceil(total / limit)
+  static paginated<T>(
+    data: T[],
+    page: number,
+    limit: number,
+    total: number,
+  ): Response {
+    const totalPages = Math.ceil(total / limit);
 
     return this.success({
       items: data,
@@ -122,6 +122,6 @@ export class ResponseHelper {
         hasNextPage: page < totalPages,
         hasPrevPage: page > 1,
       },
-    })
+    });
   }
 }

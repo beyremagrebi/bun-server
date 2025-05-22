@@ -1,39 +1,50 @@
-export type RouteDefinition = {
-  path: string
-  method: string
-  handlerName: string
-  middleware?: Function[]
-}
-export type MiddlewareFunction = (req: Request) => Promise<Request | Response | boolean | void>
-export const routes: Map<any, RouteDefinition[]> = new Map()
+import type { Document } from "mongodb";
 
-export function Route(path: string) {
-  return (target: any) => {
-    target.prototype.basePath = path
-  }
-}
+export type RouteDefinition<T extends Document> = {
+  path: string;
+  method: string;
+  handlerName: keyof T;
+  middleware?: ExpressMiddleware[];
+};
+
+type ExpressMiddleware = (req: Request) => void;
+export type MiddlewareFunction = (
+  req: Request,
+) => Promise<Request | Response | boolean | void>;
+
+type Constructor<T extends Document> = new (...args: Document[]) => T;
+
+export const routes = new Map<
+  Constructor<Document>,
+  RouteDefinition<Document>[]
+>();
 
 function createMethodDecorator(method: string) {
-  return (path: string, middleware: Function[] = []) =>
-    (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-      if (!routes.has(target.constructor)) {
-        routes.set(target.constructor, [])
+  return <T extends Document>(
+      path: string,
+      middleware: ExpressMiddleware[] = [],
+    ) =>
+    (target: object, propertyKey: string, descriptor: PropertyDescriptor) => {
+      const constructor = target.constructor as Constructor<T>;
+
+      if (!routes.has(constructor)) {
+        routes.set(constructor, []);
       }
-      const routeDefinitions = routes.get(target.constructor)
-      routeDefinitions?.push({
+      const routeDefinitions = routes.get(constructor) as RouteDefinition<T>[];
+
+      routeDefinitions.push({
         path,
         method,
-        handlerName: propertyKey,
+        handlerName: propertyKey as keyof T,
         middleware,
-      })
+      });
 
-      return descriptor
-    }
+      return descriptor;
+    };
 }
 
-// HTTP method decorators
-export const Get = createMethodDecorator("GET")
-export const Post = createMethodDecorator("POST")
-export const Put = createMethodDecorator("PUT")
-export const Delete = createMethodDecorator("DELETE")
-export const Patch = createMethodDecorator("PATCH")
+export const Get = createMethodDecorator("GET");
+export const Post = createMethodDecorator("POST");
+export const Put = createMethodDecorator("PUT");
+export const Delete = createMethodDecorator("DELETE");
+export const Patch = createMethodDecorator("PATCH");

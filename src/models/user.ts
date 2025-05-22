@@ -1,7 +1,7 @@
-import type { ObjectId } from "mongodb";
+import type { Document, ObjectId } from "mongodb";
 
-export interface User {
-  _id? : ObjectId;
+export interface User extends Document {
+  _id?: ObjectId;
   firstName: string;
   lastName: string;
   email: string;

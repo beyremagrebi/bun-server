@@ -14,7 +14,9 @@ export class ConnectionDatabase {
       }
 
       client = await MongoClient.connect(uri);
-      userCollection = client.db(EnvLoader.databaseName).collection<User>("users");
+      userCollection = client
+        .db(EnvLoader.databaseName)
+        .collection<User>("users");
     } catch (error) {
       console.error("MongoDB connection error:", error);
       throw error;
@@ -32,8 +34,6 @@ export class ConnectionDatabase {
       throw error;
     }
   }
-
-
 }
 
 // Export the userCollection getter
