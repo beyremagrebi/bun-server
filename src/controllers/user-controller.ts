@@ -3,6 +3,7 @@ import { userCollection } from "../config/connection-database";
 import type { User } from "../models/user";
 import { Get, Post } from "../routes/router-manager";
 
+import { authMiddleware } from "../middleware/aut-middleware";
 import { BaseController } from "./base-controller";
 
 class UserController extends BaseController<User> {
@@ -16,7 +17,7 @@ class UserController extends BaseController<User> {
   create(req: Request): Promise<Response> {
     return super.create(req);
   }
-  @Get("/getAll")
+  @Get("/getAll", [authMiddleware])
   getAll(): Promise<Response> {
     return super.getAll();
   }

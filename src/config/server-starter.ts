@@ -1,17 +1,16 @@
 import Bun from "bun"; // Declare the Bun variable
-import type { Document } from "mongodb";
 import type { BaseController } from "../controllers/base-controller";
 import type { IServerStarter } from "../interfaces/i-server-starter";
-import { Router } from "../routes/router";
+import { Registred } from "../routes/registred";
 import { ConnectionDatabase } from "./connection-database";
 import { EnvLoader } from "./env";
 
-export class ServerStarter<T extends Document> implements IServerStarter {
+export class ServerStarter implements IServerStarter {
   private port = 6000;
-  private router: Router<T> | null = null;
 
   constructor(
-    private Controller: new () => BaseController<T>,
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    private Controllers: (new () => BaseController<any>)[],
     port?: number,
   ) {
     if (port) this.port = port;
@@ -30,13 +29,11 @@ export class ServerStarter<T extends Document> implements IServerStarter {
   async listen(port: number): Promise<void> {
     this.port = port;
 
-    this.router = new Router<T>();
-
-    this.router.registerControllers([this.Controller]);
+    const router = new Registred(this.Controllers);
 
     Bun.serve({
       port: this.port,
-      fetch: (req) => this.router!.handleRequest(req),
+      fetch: (req) => router.router.handleRequest(req),
     });
 
     console.log(`Server running at port: ${this.port}`);

@@ -1,10 +1,12 @@
 import { Collection, MongoClient } from "mongodb";
 import { EnvLoader } from "./env";
 import type { User } from "../models/user";
+import type { Post } from "../models/post";
 
 // Database connection and collections
 let client: MongoClient;
 let userCollection: Collection<User>;
+let postCollection: Collection<Post>;
 
 export class ConnectionDatabase {
   static async connect(uri: string): Promise<void> {
@@ -17,6 +19,10 @@ export class ConnectionDatabase {
       userCollection = client
         .db(EnvLoader.databaseName)
         .collection<User>("users");
+
+      postCollection = client
+        .db(EnvLoader.databaseName)
+        .collection<Post>("posts");
     } catch (error) {
       console.error("MongoDB connection error:", error);
       throw error;
@@ -37,4 +43,4 @@ export class ConnectionDatabase {
 }
 
 // Export the userCollection getter
-export { userCollection };
+export { userCollection, postCollection };
