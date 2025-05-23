@@ -49,6 +49,15 @@ export abstract class BaseController<T extends Document> {
     }
   }
 
+  async getById(req: ServerRequest): Promise<Response> {
+    try {
+      //  await this.collection.findOne({_id : id});
+      return ResponseHelper.success(req);
+    } catch (error) {
+      return ResponseHelper.serverError(String(error));
+    }
+  }
+
   protected async parseRequestBody<U>(req: ServerRequest): Promise<U> {
     try {
       if (!req.body || Object.keys(req.body).length === 0) {

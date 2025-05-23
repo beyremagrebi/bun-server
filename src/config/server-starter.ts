@@ -34,9 +34,36 @@ export class ServerStarter implements IServerStarter {
 
     Bun.serve({
       port: this.port,
-      fetch: (req) => {
+      fetch: async (req) => {
+        // Handle preflight OPTIONS request
+        if (req.method === "OPTIONS") {
+          return new Response(null, {
+            status: 204,
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+              "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+              "Access-Control-Allow-Headers": "Content-Type",
+            },
+          });
+        }
+
         const enhancedRequest = new ServerRequest(req);
-        return router.router.handleRequest(enhancedRequest);
+        const res = await router.router.handleRequest(enhancedRequest);
+
+        // Clone response and add CORS headers
+        const headers = new Headers(res.headers);
+        headers.set("Access-Control-Allow-Origin", "*");
+        headers.set(
+          "Access-Control-Allow-Methods",
+          "GET, POST, PUT, DELETE, OPTIONS",
+        );
+        headers.set("Access-Control-Allow-Headers", "Content-Type");
+
+        return new Response(res.body, {
+          status: res.status,
+          statusText: res.statusText,
+          headers,
+        });
       },
     });
 
