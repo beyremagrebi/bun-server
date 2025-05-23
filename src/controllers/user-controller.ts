@@ -3,6 +3,7 @@ import type { Collection, OptionalUnlessRequiredId } from "mongodb";
 import type { User } from "../models/user";
 import { Get, Post } from "../routes/router-manager";
 
+import validator from "validator";
 import type { ServerRequest } from "../interfaces/i-request";
 import { authMiddleware } from "../middleware/aut-middleware";
 import { paginationMiddleware } from "../middleware/pagination-middleware";
@@ -10,7 +11,6 @@ import { CollectionsManager } from "../models/base/collection-manager";
 import { ResponseHelper } from "../utils/response-helper";
 import { UtilsFunc } from "../utils/utils-func";
 import { BaseController } from "./base/base-controller";
-import validator from "validator";
 
 class UserController extends BaseController<User> {
   constructor() {
@@ -53,10 +53,11 @@ class UserController extends BaseController<User> {
       const hashPassword = await Bun.password.hash(body.password);
       body.password = hashPassword;
       body.userName = userName;
+      body.createdAt = new Date();
+      body.updatedAt = new Date();
+      await this.collection.insertOne(body);
 
-      const { insertedId } = await this.collection.insertOne(body);
-
-      return ResponseHelper.success({ id: insertedId, ...body });
+      return ResponseHelper.success(body);
     } catch (err) {
       return ResponseHelper.error(String(err));
     }
