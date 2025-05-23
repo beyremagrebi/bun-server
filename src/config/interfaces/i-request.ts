@@ -1,6 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 import { URL } from "url";
-import type { User } from "../models/user";
+import type { User } from "../../models/user";
 
 export class ServerRequest extends Request {
   params: Record<string, string>;

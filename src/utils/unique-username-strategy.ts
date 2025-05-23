@@ -1,5 +1,5 @@
-import type { UsernameGenerationStrategy } from "../interfaces/i-generation-strategy";
-import type { UsernameExistenceChecker } from "../interfaces/i-user-existing-checket";
+import type { UsernameGenerationStrategy } from "./interfaces/i-generation-strategy";
+import type { UsernameExistenceChecker } from "./interfaces/i-user-existing-checket";
 
 export class UniqueUsernameStrategy implements UsernameGenerationStrategy {
   constructor(private existenceChecker: UsernameExistenceChecker) {}

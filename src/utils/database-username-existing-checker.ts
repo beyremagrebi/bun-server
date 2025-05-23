@@ -1,5 +1,5 @@
-import type { UsernameExistenceChecker } from "../interfaces/i-user-existing-checket";
 import { CollectionsManager } from "../models/base/collection-manager";
+import type { UsernameExistenceChecker } from "./interfaces/i-user-existing-checket";
 
 export class DatabaseUsernameExistenceChecker
   implements UsernameExistenceChecker

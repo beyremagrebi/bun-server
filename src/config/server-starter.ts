@@ -1,10 +1,12 @@
 import Bun from "bun"; // Declare the Bun variable
 import type { BaseController } from "../controllers/base/base-controller";
-import type { IServerStarter } from "../interfaces/i-server-starter";
+
 import { Registred } from "../routes/registred";
+import { createCorsResponse, handleOptionsRequest } from "../utils/cors";
 import { ConnectionDatabase } from "./connection-database";
 import { EnvLoader } from "./env";
-import { ServerRequest } from "../interfaces/i-request";
+import { ServerRequest } from "./interfaces/i-request";
+import type { IServerStarter } from "./interfaces/i-server-starter";
 
 export class ServerStarter implements IServerStarter {
   private port = 6000;
@@ -35,35 +37,12 @@ export class ServerStarter implements IServerStarter {
     Bun.serve({
       port: this.port,
       fetch: async (req) => {
-        // Handle preflight OPTIONS request
         if (req.method === "OPTIONS") {
-          return new Response(null, {
-            status: 204,
-            headers: {
-              "Access-Control-Allow-Origin": "*",
-              "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-              "Access-Control-Allow-Headers": "Content-Type",
-            },
-          });
+          return handleOptionsRequest();
         }
-
         const enhancedRequest = new ServerRequest(req);
-        const res = await router.router.handleRequest(enhancedRequest);
-
-        // Clone response and add CORS headers
-        const headers = new Headers(res.headers);
-        headers.set("Access-Control-Allow-Origin", "*");
-        headers.set(
-          "Access-Control-Allow-Methods",
-          "GET, POST, PUT, DELETE, OPTIONS",
-        );
-        headers.set("Access-Control-Allow-Headers", "Content-Type");
-
-        return new Response(res.body, {
-          status: res.status,
-          statusText: res.statusText,
-          headers,
-        });
+        const response = await router.router.handleRequest(enhancedRequest);
+        return createCorsResponse(response);
       },
     });
 

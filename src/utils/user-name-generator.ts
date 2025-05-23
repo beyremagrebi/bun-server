@@ -1,4 +1,4 @@
-import type { UsernameGenerationStrategy } from "../interfaces/i-generation-strategy";
+import type { UsernameGenerationStrategy } from "./interfaces/i-generation-strategy";
 
 export class UsernameGenerator {
   private strategy: UsernameGenerationStrategy;

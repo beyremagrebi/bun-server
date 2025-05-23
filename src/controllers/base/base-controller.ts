@@ -1,11 +1,18 @@
 import type { Collection, Document, OptionalUnlessRequiredId } from "mongodb";
-import type { RequestWithPagination } from "../../interfaces/i-pagination";
-import type { ServerRequest } from "../../interfaces/i-request";
+import type {
+  ICRUDController,
+  IRequestBodyParser,
+} from "../../interfaces/user/i-crud-controller";
+
+import type { RequestWithPagination } from "../../config/interfaces/i-pagination";
+import type { ServerRequest } from "../../config/interfaces/i-request";
 import { autoPaginateResponse } from "../../middleware/pagination-middleware";
 import { Get, Post } from "../../routes/router-manager";
 import { ResponseHelper } from "../../utils/response-helper";
 
-export abstract class BaseController<T extends Document> {
+export abstract class BaseController<T extends Document>
+  implements ICRUDController, IRequestBodyParser
+{
   protected collection: Collection<T>;
   public basePath: string;
 
@@ -20,7 +27,6 @@ export abstract class BaseController<T extends Document> {
   async getAll(req: RequestWithPagination): Promise<Response> {
     try {
       const pagination = req.pagination;
-
       let cursor = this.collection.find();
 
       if (pagination) {
@@ -51,14 +57,23 @@ export abstract class BaseController<T extends Document> {
 
   async getById(req: ServerRequest): Promise<Response> {
     try {
-      //  await this.collection.findOne({_id : id});
+      // await this.collection.findOne({_id : id});
       return ResponseHelper.success(req);
     } catch (error) {
       return ResponseHelper.serverError(String(error));
     }
   }
 
-  protected async parseRequestBody<U>(req: ServerRequest): Promise<U> {
+  async deleteAll(req: ServerRequest): Promise<Response> {
+    try {
+      await this.collection.deleteMany();
+      return ResponseHelper.success("sucess delete " + req.url);
+    } catch (error) {
+      return ResponseHelper.serverError(String(error));
+    }
+  }
+
+  async parseRequestBody<U>(req: ServerRequest): Promise<U> {
     try {
       if (!req.body || Object.keys(req.body).length === 0) {
         const text = await req.text();

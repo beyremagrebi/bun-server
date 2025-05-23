@@ -1,4 +1,4 @@
-import type { PaginatedRequest } from "../interfaces/i-pagination";
+import type { PaginatedRequest } from "../config/interfaces/i-pagination";
 import { ResponseHelper } from "../utils/response-helper";
 
 export async function paginationMiddleware(
