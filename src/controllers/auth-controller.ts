@@ -21,21 +21,30 @@ class AuthController extends BaseController<RefreshToken> {
     try {
       const body =
         await this.parseRequestBody<OptionalUnlessRequiredId<User>>(req);
+
+      if (!body.email && !body.userName) {
+        return ResponseHelper.error("Email or username is required", 400);
+      }
+
       const user = await CollectionsManager.userCollection.findOne({
-        email: body.email,
+        $or: [
+          { email: body.email ?? null },
+          { userName: body.userName ?? null },
+        ],
       });
+
       if (!user) {
         return ResponseHelper.error("User not found", 404);
       }
+
       const isMatch = await Bun.password.verify(body.password, user.password);
       if (!isMatch) {
         return ResponseHelper.error("Invalid password", 401);
       }
+
       const accessToken = generateToken({ id: user._id });
-      const refreshToken = generateToken(
-        { id: user._id, beyrem: "beryem" },
-        "5d",
-      );
+      const refreshToken = generateToken({ id: user._id }, "5d");
+
       return ResponseHelper.success({ accessToken, refreshToken });
     } catch (err) {
       return ResponseHelper.error(String(err));
@@ -45,13 +54,13 @@ class AuthController extends BaseController<RefreshToken> {
   @Post("/logout")
   async logout(req: ServerRequest): Promise<Response> {
     try {
-      return ResponseHelper.success(req.user);
+      return ResponseHelper.success(req);
     } catch (err) {
       return ResponseHelper.error(String(err));
     }
   }
 
-  @Get("/refreshToken/:id/:bey")
+  @Get("/refreshToken")
   async refreshToken(req: ServerRequest): Promise<Response> {
     try {
       return ResponseHelper.success(req);
