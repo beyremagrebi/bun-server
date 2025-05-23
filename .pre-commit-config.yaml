@@ -9,7 +9,7 @@ repos:
       - id: bun-lints
         name: bun lints
         entry: bun
-        args: ["run", "lint"]
+        args: ["run", "eslint" ,"./"]
         language: system
 
       - id: bun-prettier

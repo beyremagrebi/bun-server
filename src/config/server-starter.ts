@@ -4,6 +4,7 @@ import type { IServerStarter } from "../interfaces/i-server-starter";
 import { Registred } from "../routes/registred";
 import { ConnectionDatabase } from "./connection-database";
 import { EnvLoader } from "./env";
+import { ServerRequest } from "../interfaces/i-request";
 
 export class ServerStarter implements IServerStarter {
   private port = 6000;
@@ -33,7 +34,10 @@ export class ServerStarter implements IServerStarter {
 
     Bun.serve({
       port: this.port,
-      fetch: (req) => router.router.handleRequest(req),
+      fetch: (req) => {
+        const enhancedRequest = new ServerRequest(req);
+        return router.router.handleRequest(enhancedRequest);
+      },
     });
 
     console.log(`Server running at port: ${this.port}`);

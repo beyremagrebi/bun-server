@@ -9,12 +9,7 @@ export interface PaginationResult {
   page: number;
   limit: number;
 }
-export interface PaginatedRequest extends Request {
-  pagination: {
-    skip: number;
-    take: number;
-    page: number;
-    limit: number;
-  };
-  usePaginationResponse: boolean;
+
+export interface RequestWithPagination extends Request {
+  pagination?: PaginationResult;
 }

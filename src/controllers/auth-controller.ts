@@ -1,8 +1,8 @@
 import type { Collection, OptionalUnlessRequiredId } from "mongodb";
+import type { ServerRequest } from "../interfaces/i-request";
 import { CollectionsManager } from "../models/base/collection-manager";
 import type { RefreshToken } from "../models/refresh-token";
 import type { User } from "../models/user";
-import type { CustomRequest } from "../routes/router";
 import { Get, Post } from "../routes/router-manager";
 import { generateToken } from "../utils/j-w-t";
 import { ResponseHelper } from "../utils/response-helper";
@@ -17,7 +17,7 @@ class AuthController extends BaseController<RefreshToken> {
   }
 
   @Post("/login")
-  async login(req: Request): Promise<Response> {
+  async login(req: ServerRequest): Promise<Response> {
     try {
       const body =
         await this.parseRequestBody<OptionalUnlessRequiredId<User>>(req);
@@ -43,19 +43,18 @@ class AuthController extends BaseController<RefreshToken> {
   }
 
   @Post("/logout")
-  async logout(req: Request): Promise<Response> {
+  async logout(req: ServerRequest): Promise<Response> {
     try {
-      return ResponseHelper.success("TODO" + String(req.url));
+      return ResponseHelper.success(req.user);
     } catch (err) {
       return ResponseHelper.error(String(err));
     }
   }
 
-  @Get("/refreshToken/:hello/:ll")
-  async refreshToken(req: Request): Promise<Response> {
+  @Get("/refreshToken/:id/:bey")
+  async refreshToken(req: ServerRequest): Promise<Response> {
     try {
-      const { hello, ll } = (req as CustomRequest).params || {};
-      return ResponseHelper.success("TODO " + String(hello) + " " + ll);
+      return ResponseHelper.success(req);
     } catch (err) {
       return ResponseHelper.error(String(err));
     }

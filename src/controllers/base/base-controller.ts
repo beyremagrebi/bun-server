@@ -1,12 +1,10 @@
 import type { Collection, Document, OptionalUnlessRequiredId } from "mongodb";
+import type { RequestWithPagination } from "../../interfaces/i-pagination";
+import type { ServerRequest } from "../../interfaces/i-request";
+import { autoPaginateResponse } from "../../middleware/pagination-middleware";
 import { Get, Post } from "../../routes/router-manager";
 import { ResponseHelper } from "../../utils/response-helper";
-import { autoPaginateResponse } from "../../middleware/pagination-middleware";
-import type { PaginationResult } from "../../interfaces/i-pagination";
 
-interface RequestWithPagination extends Request {
-  pagination?: PaginationResult;
-}
 export abstract class BaseController<T extends Document> {
   protected collection: Collection<T>;
   public basePath: string;
@@ -40,7 +38,7 @@ export abstract class BaseController<T extends Document> {
   }
 
   @Post("/")
-  async create(req: Request): Promise<Response> {
+  async create(req: ServerRequest): Promise<Response> {
     try {
       const body =
         await this.parseRequestBody<OptionalUnlessRequiredId<T>>(req);
@@ -51,7 +49,7 @@ export abstract class BaseController<T extends Document> {
     }
   }
 
-  protected async parseRequestBody<U>(req: Request): Promise<U> {
+  protected async parseRequestBody<U>(req: ServerRequest): Promise<U> {
     try {
       if (!req.body || Object.keys(req.body).length === 0) {
         const text = await req.text();

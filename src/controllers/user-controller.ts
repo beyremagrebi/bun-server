@@ -3,11 +3,12 @@ import type { Collection, OptionalUnlessRequiredId } from "mongodb";
 import type { User } from "../models/user";
 import { Get, Post } from "../routes/router-manager";
 
-import { paginationMiddleware } from "../middleware/pagination-middleware";
+import type { ServerRequest } from "../interfaces/i-request";
+import { authMiddleware } from "../middleware/aut-middleware";
 import { CollectionsManager } from "../models/base/collection-manager";
 import { ResponseHelper } from "../utils/response-helper";
 import { BaseController } from "./base/base-controller";
-import { authMiddleware } from "../middleware/aut-middleware";
+import { paginationMiddleware } from "../middleware/pagination-middleware";
 
 class UserController extends BaseController<User> {
   constructor() {
@@ -17,7 +18,7 @@ class UserController extends BaseController<User> {
     return CollectionsManager.userCollection;
   }
   @Post("/add-user")
-  async create(req: Request): Promise<Response> {
+  async create(req: ServerRequest): Promise<Response> {
     try {
       const body =
         await this.parseRequestBody<OptionalUnlessRequiredId<User>>(req);
@@ -32,7 +33,7 @@ class UserController extends BaseController<User> {
   }
 
   @Get("/getAll", [authMiddleware, paginationMiddleware])
-  getAll(req: Request): Promise<Response> {
+  async getAll(req: ServerRequest): Promise<Response> {
     return super.getAll(req);
   }
 }
