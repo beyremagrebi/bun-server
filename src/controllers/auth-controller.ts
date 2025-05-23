@@ -1,5 +1,7 @@
 import type { Collection, OptionalUnlessRequiredId } from "mongodb";
+import validator from "validator";
 import type { ServerRequest } from "../interfaces/i-request";
+import { authMiddleware } from "../middleware/aut-middleware";
 import { CollectionsManager } from "../models/base/collection-manager";
 import type { RefreshToken } from "../models/refresh-token";
 import type { User } from "../models/user";
@@ -7,8 +9,6 @@ import { Get, Post } from "../routes/router-manager";
 import { generateToken } from "../utils/j-w-t";
 import { ResponseHelper } from "../utils/response-helper";
 import { BaseController } from "./base/base-controller";
-import { authMiddleware } from "../middleware/aut-middleware";
-import validator from "validator";
 
 class AuthController extends BaseController<RefreshToken> {
   constructor() {
