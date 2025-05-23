@@ -4,8 +4,9 @@ import { routes, type RouteDefinition } from "../types/route-types";
 import { RouteMatcher } from "./route-matcher";
 import { MiddlewareExecutor } from "../middleware/middleware-extractor";
 import { ResponseHelper } from "../utils/response-helper";
-import type { ServerRequest } from "../interfaces/i-request";
+
 import { RouteRegistry, type RouteHandler } from "./route-registry";
+import type { ServerRequest } from "../config/interfaces/i-request";
 
 export class Router<T extends Document> {
   private controllers: BaseController<T>[] = [];

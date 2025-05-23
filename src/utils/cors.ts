@@ -3,7 +3,7 @@ export function createCorsResponse(response: Response): Response {
   headers.set("Access-Control-Allow-Origin", "*");
   headers.set(
     "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS",
+    "GET, POST, PUT, DELETE, PATCH, OPTIONS",
   );
   headers.set("Access-Control-Allow-Headers", "Content-Type");
 
@@ -19,7 +19,7 @@ export function handleOptionsRequest(): Response {
     status: 204,
     headers: {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
     },
   });
