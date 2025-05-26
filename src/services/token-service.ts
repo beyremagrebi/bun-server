@@ -5,11 +5,11 @@ import { generateToken, verifyToken } from "../utils/j-w-t";
 
 export class TokenService implements ITokenService {
   generateAccessToken(userId: ObjectId): string {
-    return generateToken({ id: userId });
+    return generateToken({ _id: userId });
   }
 
   generateRefreshToken(userId: ObjectId): string {
-    return generateToken({ id: userId }, "5d");
+    return generateToken({ _id: userId }, "5d");
   }
 
   async verifyToken(token: string): Promise<MyJwtPayload> {

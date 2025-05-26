@@ -43,10 +43,10 @@ class UserController extends BaseController<User> {
     }
   }
 
-  @Get("/by-id/:id", [authMiddleware])
+  @Get("/by-id", [authMiddleware])
   async getById(req: ServerRequest): Promise<Response> {
     try {
-      return this.userService.findUserById(String(req.params.id));
+      return this.userService.findUserById(req.user?._id);
     } catch (err) {
       return ResponseHelper.error(String(err));
     }

@@ -1,6 +1,7 @@
 import { jwtDecode } from "jwt-decode";
 import { URL } from "url";
 import type { User } from "../../models/user";
+import { ObjectId } from "mongodb";
 
 export class ServerRequest extends Request {
   params: Record<string, string>;
@@ -21,8 +22,9 @@ export class ServerRequest extends Request {
     try {
       const token = authHeader.split(" ")[1];
       if (!token) return null;
-
-      return jwtDecode<User>(token);
+      const decodedToken = jwtDecode<User>(token);
+      decodedToken._id = new ObjectId(decodedToken._id);
+      return decodedToken;
     } catch (error) {
       console.error("Token decode failed:", error);
       return null;

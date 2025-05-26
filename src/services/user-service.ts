@@ -8,12 +8,12 @@ import { UtilsFunc } from "../utils/utils-func";
 
 export class UserService implements IUserService {
   constructor(private userRepository: IUserRepository) {}
-  async findUserById(userId: string): Promise<Response> {
-    if (!ObjectId.isValid(userId)) {
+  async findUserById(userId: ObjectId | undefined): Promise<Response> {
+    if (!userId || !ObjectId.isValid(userId)) {
       return ResponseHelper.error("Invalid user ID format", 400);
     }
-    const userObjectId = new ObjectId(userId);
-    const user = await this.userRepository.findById(userObjectId);
+
+    const user = await this.userRepository.findById(userId);
     return ResponseHelper.success(user);
   }
 
