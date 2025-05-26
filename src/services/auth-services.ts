@@ -74,7 +74,7 @@ export class AuthService implements IAuthService {
 
     const payload = await tokenService.verifyToken(token);
     await this.refreshTokenRepository.deleteByUserId(
-      new ObjectId(String(payload.id)),
+      new ObjectId(String(payload._id)),
     );
 
     return ResponseHelper.success({ message: "Logged out successfully" });
@@ -93,7 +93,7 @@ export class AuthService implements IAuthService {
       return ResponseHelper.error("Refresh token not found", 403);
     }
 
-    const userId = new ObjectId(String(payload.id));
+    const userId = new ObjectId(String(payload._id));
     const user = await this.userRepository.findById(userId);
 
     if (!user) {

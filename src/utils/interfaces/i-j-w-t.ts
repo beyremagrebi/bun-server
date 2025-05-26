@@ -1,7 +1,7 @@
 import type { JwtPayload } from "jwt-decode";
 
 export class MyJwtPayload implements JwtPayload {
-  id?: string;
+  _id?: string;
   iat?: number;
   exp?: number;
   aud?: string | string[] | undefined;
