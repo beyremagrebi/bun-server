@@ -94,7 +94,7 @@ export class AuthService implements IAuthService {
     }
 
     const userId = new ObjectId(String(payload._id));
-    const user = await this.userRepository.findById(userId);
+    const user = await this.userRepository.findById(userId, 0);
 
     if (!user) {
       return ResponseHelper.error("User no longer exists", 404);

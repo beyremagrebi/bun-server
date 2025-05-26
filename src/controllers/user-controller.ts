@@ -6,17 +6,20 @@ import { Get, Put } from "../routes/router-manager";
 
 import type { ServerRequest } from "../config/interfaces/i-request";
 import type { User } from "../models/user";
-import { UserRepository } from "../repositories/user-repository";
+
 import { UserService } from "../services/user-service";
 import { ResponseHelper } from "../utils/response-helper";
 import { BaseController } from "./base/base-controller";
+import type { RequestWithPagination } from "../config/interfaces/i-pagination";
+import type { ChangePasswordPayload } from "../interfaces/user/i-crud-controller";
+import { userRepository } from "../repositories/user-repository";
 
 class UserController extends BaseController<User> {
   private userService: UserService;
 
   constructor() {
     super("/user");
-    this.userService = new UserService(new UserRepository());
+    this.userService = new UserService(new userRepository());
   }
 
   protected initializeCollection(): Collection<User> {
@@ -24,11 +27,11 @@ class UserController extends BaseController<User> {
   }
 
   @Get("/getAll", [authMiddleware, paginationMiddleware])
-  async getAll(): Promise<Response> {
+  async getAll(req: RequestWithPagination): Promise<Response> {
     try {
-      return this.userService.getAllUsers();
+      return super.getAll(req);
     } catch (err) {
-      return ResponseHelper.error(String(err));
+      return ResponseHelper.serverError(String(err));
     }
   }
 
@@ -37,16 +40,16 @@ class UserController extends BaseController<User> {
     try {
       return this.userService.findUserById(req.user?._id);
     } catch (err) {
-      return ResponseHelper.error(String(err));
+      return ResponseHelper.serverError(String(err));
     }
   }
   @Put("/change-password", [authMiddleware])
   async changePassword(req: ServerRequest): Promise<Response> {
     try {
-      const body = await this.parseRequestBody(req);
-      return ResponseHelper.success(body);
+      const body = await this.parseRequestBody<ChangePasswordPayload>(req);
+      return this.userService.changePassword(req.user?._id, body);
     } catch (err) {
-      return ResponseHelper.error(String(err));
+      return ResponseHelper.serverError(String(err));
     }
   }
 }

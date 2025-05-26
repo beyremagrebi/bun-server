@@ -4,13 +4,16 @@ import type { IUserRepository } from "../interfaces/user/i-user-repository";
 import { CollectionsManager } from "../models/base/collection-manager";
 import type { User } from "../models/user";
 
-export class UserRepository implements IUserRepository {
+export class userRepository implements IUserRepository {
   private collection = CollectionsManager.userCollection;
 
-  async findById(userId: ObjectId): Promise<User | null> {
+  async findById(
+    userId: ObjectId,
+    withPassword: number = 0,
+  ): Promise<User | null> {
     return this.collection.findOne(
       { _id: userId },
-      { projection: { password: 0 } },
+      { projection: { password: withPassword } },
     );
   }
 
@@ -34,5 +37,12 @@ export class UserRepository implements IUserRepository {
 
   async findAll(): Promise<User[]> {
     return this.collection.find().toArray();
+  }
+
+  async changePassword(userId: ObjectId, newPassword: string): Promise<void> {
+    this.collection.updateOne(
+      { _id: userId },
+      { $set: { password: newPassword } },
+    );
   }
 }

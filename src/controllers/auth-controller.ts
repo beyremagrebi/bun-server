@@ -6,7 +6,7 @@ import { CollectionsManager } from "../models/base/collection-manager";
 import type { RefreshToken } from "../models/refresh-token";
 import type { User } from "../models/user";
 import { RefreshTokenRepository } from "../repositories/refresh-token-repository";
-import { UserRepository } from "../repositories/user-repository";
+
 import { Post } from "../routes/router-manager";
 import { AuthService } from "../services/auth-services";
 
@@ -14,6 +14,7 @@ import { otpVerificationRepository } from "../repositories/otp-verification-repo
 import { getTokenFromHeaders } from "../utils/auth";
 import { ResponseHelper } from "../utils/response-helper";
 import { BaseController } from "./base/base-controller";
+import { userRepository } from "../repositories/user-repository";
 
 class AuthController extends BaseController<RefreshToken> {
   private authService: AuthService;
@@ -21,7 +22,7 @@ class AuthController extends BaseController<RefreshToken> {
   constructor() {
     super("/auth");
     this.authService = new AuthService(
-      new UserRepository(),
+      new userRepository(),
       new RefreshTokenRepository(),
       new otpVerificationRepository(),
     );
@@ -48,7 +49,7 @@ class AuthController extends BaseController<RefreshToken> {
       const token = getTokenFromHeaders(req.headers);
       return this.authService.logout(token);
     } catch (err) {
-      return ResponseHelper.error(String(err));
+      return ResponseHelper.serverError(String(err));
     }
   }
 
@@ -58,7 +59,7 @@ class AuthController extends BaseController<RefreshToken> {
       const body = await this.parseRequestBody<{ refreshToken: string }>(req);
       return this.authService.refreshToken(body.refreshToken);
     } catch (err) {
-      return ResponseHelper.error(String(err), 500);
+      return ResponseHelper.serverError(String(err));
     }
   }
 
@@ -67,7 +68,7 @@ class AuthController extends BaseController<RefreshToken> {
     try {
       return this.authService.sendOtp(String(req.params.email));
     } catch (err) {
-      return ResponseHelper.error(String(err), 500);
+      return ResponseHelper.serverError(String(err));
     }
   }
 
@@ -78,7 +79,7 @@ class AuthController extends BaseController<RefreshToken> {
         await this.parseRequestBody<OptionalUnlessRequiredId<User>>(req);
       return this.authService.verifyOtp(String(req.params.otp), body);
     } catch (err) {
-      return ResponseHelper.error(String(err), 500);
+      return ResponseHelper.serverError(String(err));
     }
   }
 }

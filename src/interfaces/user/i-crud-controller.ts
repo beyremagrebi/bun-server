@@ -12,3 +12,8 @@ export interface ICRUDController {
 export interface IRequestBodyParser {
   parseRequestBody<U>(req: ServerRequest): Promise<U>;
 }
+
+export interface ChangePasswordPayload {
+  oldPassword: string;
+  newPassword: string;
+}
