@@ -25,4 +25,11 @@ export class RefreshTokenRepository implements IRefreshTokenRepository {
   async findByUserId(userId: ObjectId): Promise<RefreshToken | null> {
     return this.collection.findOne({ userId });
   }
+
+  async update(tokenData: RefreshToken): Promise<void> {
+    await this.collection.updateOne(
+      { _id: tokenData._id },
+      { $set: tokenData },
+    );
+  }
 }

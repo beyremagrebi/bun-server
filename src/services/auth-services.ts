@@ -35,21 +35,25 @@ export class AuthService implements IAuthService {
 
     const existingSession =
       await this.refreshTokenRepository.findByUserId(userId);
-    if (existingSession) {
-      return ResponseHelper.error("User already has an active session", 409);
-    }
 
     const accessToken = this.tokenService.generateAccessToken(user._id);
     const refreshToken = this.tokenService.generateRefreshToken(user._id);
 
-    const refreshTokenData: RefreshToken = {
-      userId: userId,
-      token: refreshToken,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    if (existingSession) {
+      existingSession.token = refreshToken;
+      existingSession.updatedAt = new Date();
 
-    await this.refreshTokenRepository.create(refreshTokenData);
+      await this.refreshTokenRepository.update(existingSession);
+    } else {
+      const refreshTokenData: RefreshToken = {
+        userId: userId,
+        token: refreshToken,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      await this.refreshTokenRepository.create(refreshTokenData);
+    }
 
     return ResponseHelper.success({
       accessToken,

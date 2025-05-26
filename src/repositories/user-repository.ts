@@ -8,7 +8,10 @@ export class UserRepository implements IUserRepository {
   private collection = CollectionsManager.userCollection;
 
   async findById(userId: ObjectId): Promise<User | null> {
-    return this.collection.findOne({ _id: userId });
+    return this.collection.findOne(
+      { _id: userId },
+      { projection: { password: 0 } },
+    );
   }
 
   async findByIdentifier(identifier: string): Promise<User | null> {

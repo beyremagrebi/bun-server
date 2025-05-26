@@ -1,4 +1,4 @@
-import type { OptionalUnlessRequiredId } from "mongodb";
+import { ObjectId, type OptionalUnlessRequiredId } from "mongodb";
 import validator from "validator";
 import type { IUserService } from "../interfaces/i-user-serice";
 import type { IUserRepository } from "../interfaces/user/i-user-repository";
@@ -8,6 +8,14 @@ import { UtilsFunc } from "../utils/utils-func";
 
 export class UserService implements IUserService {
   constructor(private userRepository: IUserRepository) {}
+  async findUserById(userId: string): Promise<Response> {
+    if (!ObjectId.isValid(userId)) {
+      return ResponseHelper.error("Invalid user ID format", 400);
+    }
+    const userObjectId = new ObjectId(userId);
+    const user = await this.userRepository.findById(userObjectId);
+    return ResponseHelper.success(user);
+  }
 
   async createUser(
     userData: OptionalUnlessRequiredId<User>,

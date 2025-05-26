@@ -42,6 +42,15 @@ class UserController extends BaseController<User> {
       return ResponseHelper.error(String(err));
     }
   }
+
+  @Get("/by-id/:id", [authMiddleware])
+  async getById(req: ServerRequest): Promise<Response> {
+    try {
+      return this.userService.findUserById(String(req.params.id));
+    } catch (err) {
+      return ResponseHelper.error(String(err));
+    }
+  }
 }
 
 export default UserController;

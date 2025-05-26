@@ -17,7 +17,9 @@
     "typescript": "^5"
   },
   "scripts": {
-    "dev": "bun --watch ./src/server.ts"
+    "dev": "bun --watch ./src/server.ts",
+    "format": "bun prettier --write ./src",
+    "lints": "bun eslint ./src --ext .ts,.js"
   },
   "dependencies": {
     "@types/validator": "^13.15.1",

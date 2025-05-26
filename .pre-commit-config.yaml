@@ -2,20 +2,18 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.3.0
     hooks:
-    -   id: end-of-file-fixer
-    -   id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
   - repo: local
     hooks:
       - id: bun-lints
         name: bun lints
         entry: bun
-        args: ["run", "eslint" ,"./"]
+        args: ["run", "lints"]
         language: system
 
-      - id: bun-prettier
-        name: prettier
-        entry: bash
-        args:
-          - -c
-          - bun prettier --write ./src
+      - id: bun-lints
+        name: bun lints
+        entry: bun
+        args: ["run", "format"]
         language: system
