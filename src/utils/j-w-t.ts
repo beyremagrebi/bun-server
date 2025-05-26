@@ -4,7 +4,7 @@ import { ResponseHelper } from "./response-helper";
 import { EnvLoader } from "../config/env";
 export const generateToken = (
   payload: object,
-  expiresIn: StringValue | number = "15m",
+  expiresIn: StringValue | number = EnvLoader.ExpAccssToken,
 ): string => {
   if (!EnvLoader.jwtSecret) {
     throw new Error("JWT_SECRET is not defined in environment variables");

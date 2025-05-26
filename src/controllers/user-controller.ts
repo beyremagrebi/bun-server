@@ -2,7 +2,7 @@ import { Collection } from "mongodb";
 import { authMiddleware } from "../middleware/aut-middleware";
 import { paginationMiddleware } from "../middleware/pagination-middleware";
 import { CollectionsManager } from "../models/base/collection-manager";
-import { Get } from "../routes/router-manager";
+import { Get, Put } from "../routes/router-manager";
 
 import type { ServerRequest } from "../config/interfaces/i-request";
 import type { User } from "../models/user";
@@ -36,6 +36,15 @@ class UserController extends BaseController<User> {
   async getById(req: ServerRequest): Promise<Response> {
     try {
       return this.userService.findUserById(req.user?._id);
+    } catch (err) {
+      return ResponseHelper.error(String(err));
+    }
+  }
+  @Put("/change-password", [authMiddleware])
+  async changePassword(req: ServerRequest): Promise<Response> {
+    try {
+      const body = await this.parseRequestBody(req);
+      return ResponseHelper.success(body);
     } catch (err) {
       return ResponseHelper.error(String(err));
     }

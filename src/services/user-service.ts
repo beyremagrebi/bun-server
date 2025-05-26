@@ -18,4 +18,7 @@ export class UserService implements IUserService {
     const users = await this.userRepository.findAll();
     return ResponseHelper.success(users);
   }
+  async changePassword(): Promise<Response> {
+    return ResponseHelper.error("Method not implemented.", 501);
+  }
 }
