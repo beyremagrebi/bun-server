@@ -1,8 +1,6 @@
-import type { ObjectId, OptionalUnlessRequiredId } from "mongodb";
-import type { User } from "../models/user";
+import type { ObjectId } from "mongodb";
 
 export interface IUserService {
-  createUser(userData: OptionalUnlessRequiredId<User>): Promise<Response>;
   findUserById(userId: ObjectId): Promise<Response>;
   getAllUsers(): Promise<Response>;
 }

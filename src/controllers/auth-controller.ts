@@ -9,7 +9,8 @@ import { RefreshTokenRepository } from "../repositories/refresh-token-repository
 import { UserRepository } from "../repositories/user-repository";
 import { Post } from "../routes/router-manager";
 import { AuthService } from "../services/auth-services";
-import { TokenService } from "../services/token-service";
+
+import { otpVerificationRepository } from "../repositories/otp-verification-repository";
 import { getTokenFromHeaders } from "../utils/auth";
 import { ResponseHelper } from "../utils/response-helper";
 import { BaseController } from "./base/base-controller";
@@ -22,7 +23,7 @@ class AuthController extends BaseController<RefreshToken> {
     this.authService = new AuthService(
       new UserRepository(),
       new RefreshTokenRepository(),
-      new TokenService(),
+      new otpVerificationRepository(),
     );
   }
 
@@ -56,6 +57,26 @@ class AuthController extends BaseController<RefreshToken> {
     try {
       const body = await this.parseRequestBody<{ refreshToken: string }>(req);
       return this.authService.refreshToken(body.refreshToken);
+    } catch (err) {
+      return ResponseHelper.error(String(err), 500);
+    }
+  }
+
+  @Post("/send-otp/:email")
+  async sendOtp(req: ServerRequest): Promise<Response> {
+    try {
+      return this.authService.sendOtp(String(req.params.email));
+    } catch (err) {
+      return ResponseHelper.error(String(err), 500);
+    }
+  }
+
+  @Post("/verify-otp/:otp")
+  async verifyOtp(req: ServerRequest): Promise<Response> {
+    try {
+      const body =
+        await this.parseRequestBody<OptionalUnlessRequiredId<User>>(req);
+      return this.authService.verifyOtp(String(req.params.otp), body);
     } catch (err) {
       return ResponseHelper.error(String(err), 500);
     }

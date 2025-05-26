@@ -1,8 +1,8 @@
-import { Collection, type OptionalUnlessRequiredId } from "mongodb";
+import { Collection } from "mongodb";
 import { authMiddleware } from "../middleware/aut-middleware";
 import { paginationMiddleware } from "../middleware/pagination-middleware";
 import { CollectionsManager } from "../models/base/collection-manager";
-import { Get, Post } from "../routes/router-manager";
+import { Get } from "../routes/router-manager";
 
 import type { ServerRequest } from "../config/interfaces/i-request";
 import type { User } from "../models/user";
@@ -21,17 +21,6 @@ class UserController extends BaseController<User> {
 
   protected initializeCollection(): Collection<User> {
     return CollectionsManager.userCollection;
-  }
-
-  @Post("/add-user")
-  async create(req: ServerRequest): Promise<Response> {
-    try {
-      const body =
-        await this.parseRequestBody<OptionalUnlessRequiredId<User>>(req);
-      return this.userService.createUser(body);
-    } catch (err) {
-      return ResponseHelper.error(String(err));
-    }
   }
 
   @Get("/getAll", [authMiddleware, paginationMiddleware])

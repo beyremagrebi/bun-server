@@ -22,10 +22,13 @@
     "lints": "bun eslint ./src --ext .ts,.js"
   },
   "dependencies": {
+    "@types/nodemailer": "^6.4.17",
     "@types/validator": "^13.15.1",
+    "crypto": "^1.0.1",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "mongodb": "^6.16.0",
+    "nodemailer": "^7.0.3",
     "validator": "^13.15.0"
   }
 }

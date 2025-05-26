@@ -1,16 +1,21 @@
-import { ObjectId } from "mongodb";
+import * as crypto from "crypto";
+import { ObjectId, type OptionalUnlessRequiredId } from "mongodb";
 import type { IAuthService } from "../interfaces/auth/i-auth-service";
+import type { IOtpVerificationRepository } from "../interfaces/auth/i-otp--verification-repository";
 import type { IRefreshTokenRepository } from "../interfaces/auth/i-refresh-token-repository";
-import type { ITokenService } from "../interfaces/auth/i-token-service";
 import type { IUserRepository } from "../interfaces/user/i-user-repository";
+import type { OtpVerification } from "../models/otp-verification";
 import type { RefreshToken } from "../models/refresh-token";
+import type { User } from "../models/user";
+import { createUser } from "../utils/auth";
+import { sendEmail } from "../utils/email-service";
 import { ResponseHelper } from "../utils/response-helper";
-
+import { tokenService } from "./token-service";
 export class AuthService implements IAuthService {
   constructor(
     private userRepository: IUserRepository,
     private refreshTokenRepository: IRefreshTokenRepository,
-    private tokenService: ITokenService,
+    private otpVerificationRepository: IOtpVerificationRepository,
   ) {}
 
   async login(
@@ -36,8 +41,8 @@ export class AuthService implements IAuthService {
     const existingSession =
       await this.refreshTokenRepository.findByUserId(userId);
 
-    const accessToken = this.tokenService.generateAccessToken(user._id);
-    const refreshToken = this.tokenService.generateRefreshToken(user._id);
+    const accessToken = tokenService.generateAccessToken(user._id);
+    const refreshToken = tokenService.generateRefreshToken(user._id);
 
     if (existingSession) {
       existingSession.token = refreshToken;
@@ -67,7 +72,7 @@ export class AuthService implements IAuthService {
       return ResponseHelper.error("could not get token", 400);
     }
 
-    const payload = await this.tokenService.verifyToken(token);
+    const payload = await tokenService.verifyToken(token);
     await this.refreshTokenRepository.deleteByUserId(
       new ObjectId(String(payload.id)),
     );
@@ -80,7 +85,7 @@ export class AuthService implements IAuthService {
       return ResponseHelper.error("Refresh token is required", 400);
     }
 
-    const payload = await this.tokenService.verifyToken(refreshToken);
+    const payload = await tokenService.verifyToken(refreshToken);
     const tokenDoc =
       await this.refreshTokenRepository.findByToken(refreshToken);
 
@@ -97,8 +102,8 @@ export class AuthService implements IAuthService {
 
     await this.refreshTokenRepository.deleteByToken(refreshToken);
 
-    const newAccessToken = this.tokenService.generateAccessToken(user._id);
-    const newRefreshToken = this.tokenService.generateRefreshToken(user._id);
+    const newAccessToken = tokenService.generateAccessToken(user._id);
+    const newRefreshToken = tokenService.generateRefreshToken(user._id);
 
     await this.refreshTokenRepository.create({
       userId: userId,
@@ -111,5 +116,45 @@ export class AuthService implements IAuthService {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     });
+  }
+
+  async sendOtp(email: string): Promise<Response> {
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    const verificationUrl = "https://f94e-197-27-119-24.ngrok-free.app/verify";
+    const otpData: OtpVerification = {
+      email: email,
+      otp,
+      expiresAt,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    await sendEmail({
+      to: email,
+      otp,
+      verificationUrl,
+    }).catch(console.error);
+
+    await this.otpVerificationRepository.create(otpData);
+    return ResponseHelper.success({ otp, expiresAt });
+  }
+  async verifyOtp(
+    otp: string,
+    userData: OptionalUnlessRequiredId<User>,
+  ): Promise<Response> {
+    const otpRecord = await this.otpVerificationRepository.findbyOtpCode(otp);
+
+    if (!otpRecord) {
+      return ResponseHelper.error("Invalid OTP");
+    }
+
+    const currentTime = new Date();
+    if (currentTime > otpRecord.expiresAt) {
+      return ResponseHelper.error("OTP expired");
+    }
+
+    await this.otpVerificationRepository.deleteById(otpRecord._id);
+
+    return createUser(userData);
   }
 }
