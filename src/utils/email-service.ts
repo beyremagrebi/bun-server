@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { Logger } from "../config/logger";
 type SendEmailOptions = {
   to: string;
   otp?: string;
@@ -58,5 +59,8 @@ export async function sendEmail({
     html,
   });
 
-  console.log("Message sent: %s", info.messageId);
+  Logger.success(
+    `Email sent to ${to} with subject "${subject}" With ID : ${info.messageId}`,
+    false,
+  );
 }

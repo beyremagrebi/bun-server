@@ -8,6 +8,7 @@ import { EnvLoader } from "./env";
 import { ServerRequest } from "./interfaces/i-request";
 import type { IServerStarter } from "./interfaces/i-server-starter";
 import { handleUploadsRequest } from "./uploads-response";
+import { Logger } from "./logger";
 
 export class ServerStarter implements IServerStarter {
   private port = 6000;
@@ -23,10 +24,9 @@ export class ServerStarter implements IServerStarter {
   async connection(): Promise<void> {
     try {
       await ConnectionDatabase.connect(EnvLoader.uri);
-      console.log("Database connected");
     } catch (error) {
-      console.error("DB connection failed", error);
-      throw error;
+      Logger.error(`Database connection error: ${error}`);
+      return;
     }
   }
 
@@ -59,7 +59,7 @@ export class ServerStarter implements IServerStarter {
       },
     });
 
-    console.log(`Server running at port: ${this.port}`);
+    Logger.success(`Server running at port: ${this.port}`, false);
   }
 
   async start(): Promise<void> {
