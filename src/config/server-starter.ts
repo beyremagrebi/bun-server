@@ -51,9 +51,7 @@ export class ServerStarter implements IServerStarter {
         else {
           const enhancedRequest = new ServerRequest(req);
           const response = await router.router.handleRequest(enhancedRequest);
-          if (response.status === 404) {
-            return new Response("Not Found", { status: 404 });
-          }
+
           return createCorsResponse(response);
         }
       },
