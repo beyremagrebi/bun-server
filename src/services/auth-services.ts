@@ -121,7 +121,6 @@ export class AuthService implements IAuthService {
   async sendOtp(email: string): Promise<Response> {
     const otp = crypto.randomInt(100000, 999999).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-    const verificationUrl = "https://f94e-197-27-119-24.ngrok-free.app/verify";
     const user = await this.userRepository.findByEmail(email);
     if (user) {
       return ResponseHelper.error("User already exists with this email", 400);
@@ -136,7 +135,6 @@ export class AuthService implements IAuthService {
     await sendEmail({
       to: email,
       otp,
-      verificationUrl,
     }).catch(console.error);
 
     await this.otpVerificationRepository.create(otpData);

@@ -10,7 +10,6 @@ sgMail.setApiKey(SENDGRID_API_KEY);
 type SendEmailOptions = {
   to: string;
   otp?: string;
-  verificationUrl?: string;
   subject?: string;
   text?: string;
   html?: string;
@@ -19,14 +18,13 @@ type SendEmailOptions = {
 export async function sendEmail({
   to,
   otp,
-  verificationUrl,
   subject,
   text,
   html,
 }: SendEmailOptions) {
-  if (otp && verificationUrl && !text && !html) {
-    subject = subject || "Verify Your Email – Proservices OTP";
-    text = `Your OTP code is: ${otp}. Click the link to verify: ${verificationUrl}\nThis code will expire in 5 minutes.`;
+  if (otp && !text && !html) {
+    subject = subject || "Verify Your Email – ThymSys OTP";
+    text = `Your OTP code is: ${otp}. Click the link to verify: ${EnvLoader.verficationUrl}\nThis code will expire in 5 minutes.`;
     html = `
       <div style="font-family: Arial, sans-serif; color: #333;">
         <h2 style="color: #FF8C00;">Email Verification</h2>
@@ -34,7 +32,7 @@ export async function sendEmail({
         <p>Your One-Time Password (OTP) is:</p>
         <p style="font-size: 24px; font-weight: bold; color: #FF8C00;">${otp}</p>
         <p>Click the button below to verify your email:</p>
-        <a href="${verificationUrl}" style="
+        <a href="${EnvLoader.verficationUrl}" style="
             display: inline-block;
             background-color: #FF8C00;
             color: white;
