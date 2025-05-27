@@ -55,11 +55,6 @@ export async function sendEmail({
     text: text || "",
     html: html || "",
   };
-
-  try {
-    await sgMail.send(msg);
-    Logger.success(`Email sent to ${to} successfully.`, false);
-  } catch (error) {
-    Logger.error(`Failed to send email: ${error}`);
-  }
+  await sgMail.send(msg);
+  Logger.success(`Email sent to ${to} successfully.`, false);
 }

@@ -11,6 +11,7 @@ import { createUser } from "../utils/auth";
 import { sendEmail } from "../utils/email-service";
 import { ResponseHelper } from "../utils/response-helper";
 import { tokenService } from "./token-service";
+import { Logger } from "../config/logger";
 export class AuthService implements IAuthService {
   constructor(
     private userRepository: IUserRepository,
@@ -132,14 +133,20 @@ export class AuthService implements IAuthService {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    await sendEmail({
-      to: email,
-      otp,
-    }).catch(console.error);
+    try {
+      await sendEmail({
+        to: email,
+        otp,
+      });
 
-    await this.otpVerificationRepository.create(otpData);
-    return ResponseHelper.success({ otp, expiresAt });
+      await this.otpVerificationRepository.create(otpData);
+      return ResponseHelper.success({ otp, expiresAt });
+    } catch (error) {
+      Logger.error(`Failed to send OTP email to ${email}: ${error}`);
+      return ResponseHelper.error("Failed to send verification email", 500);
+    }
   }
+
   async verifyOtp(
     otp: string,
     userData: OptionalUnlessRequiredId<User>,
