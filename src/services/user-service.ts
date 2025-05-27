@@ -65,29 +65,49 @@ export class UserService implements IUserService {
     user: User,
     formData: FormData,
   ): Promise<Response> {
-    const storePath = `${UPLOAD_PATHS.images}-${req.user?._id}`;
-    const userExist = await this.userRepository.findById(req.user?._id, 0);
-    if (formData.has("image")) {
-      const result = (await handleFileUpload(formData, {
-        fieldName: "image",
-        storePath: storePath,
-        fileName: new Date().getTime().toString(),
-        multiple: false,
-        writeToDisk: true,
-      })) as UploadResult;
-      if (result) {
-        user.image = result.fileName;
-        deleteFiles(userExist?.image, storePath);
-      } else {
-        user.image = userExist?.image;
+    try {
+      const userId = req.user?._id;
+      const storePath = `${UPLOAD_PATHS.images}-${userId}`;
+
+      if (user.userName) {
+        const existingUser = await this.userRepository.findByUsername(
+          user.userName,
+        );
+        if (
+          existingUser &&
+          existingUser._id?.toString() !== userId?.toString()
+        ) {
+          return ResponseHelper.error("Username already exists", 400);
+        }
       }
+      const currentUser = await this.userRepository.findById(userId, 0);
+      if (!currentUser) {
+        return ResponseHelper.error("User not found", 404);
+      }
+
+      if (formData.has("image")) {
+        const result = (await handleFileUpload(formData, {
+          fieldName: "image",
+          storePath,
+          fileName: new Date().getTime().toString(),
+          multiple: false,
+          writeToDisk: true,
+        })) as UploadResult;
+
+        if (result?.fileName) {
+          if (currentUser.image) {
+            deleteFiles(currentUser.image, storePath);
+          }
+          user.image = result.fileName;
+        } else {
+          user.image = currentUser.image;
+        }
+      }
+
+      const updatedUser = await this.userRepository.updateProfile(userId, user);
+      return ResponseHelper.success(updatedUser);
+    } catch (error) {
+      return ResponseHelper.serverError(String(error));
     }
-
-    const updatedUser = await this.userRepository.updateProfile(
-      req.user?._id,
-      user,
-    );
-
-    return ResponseHelper.success(updatedUser);
   }
 }
