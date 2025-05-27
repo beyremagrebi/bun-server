@@ -1,5 +1,8 @@
-import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
 import { Logger } from "../config/logger";
+
+sgMail.setApiKey("SG.your_sendgrid_api_key_here");
+
 type SendEmailOptions = {
   to: string;
   otp?: string;
@@ -17,14 +20,6 @@ export async function sendEmail({
   text,
   html,
 }: SendEmailOptions) {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "proservices.square@gmail.com",
-      pass: "gumf ihse lxuv ynwk",
-    },
-  });
-
   if (otp && verificationUrl && !text && !html) {
     subject = subject || "Verify Your Email – Proservices OTP";
     text = `Your OTP code is: ${otp}. Click the link to verify: ${verificationUrl}\nThis code will expire in 5 minutes.`;
@@ -51,16 +46,21 @@ export async function sendEmail({
     `;
   }
 
-  const info = await transporter.sendMail({
-    from: '"Proservices Team" <proservices.square@gmail.com>',
+  const msg = {
     to,
-    subject,
-    text,
-    html,
-  });
+    from: "proservices.square@gmail.com", // MUST be a verified sender on SendGrid
+    subject: subject || "",
+    text: text || "",
+    html: html || "",
+  };
 
-  Logger.success(
-    `Email sent to ${to} with subject "${subject}" With ID : ${info.messageId}`,
-    false,
-  );
+  try {
+    const response = await sgMail.send(msg);
+    Logger.success(
+      `Email sent to ${to} with subject "${subject}" [${response}]`,
+      false,
+    );
+  } catch (error) {
+    Logger.error(`Failed to send email: ${error}`);
+  }
 }
