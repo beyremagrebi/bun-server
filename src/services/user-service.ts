@@ -3,6 +3,14 @@ import type { IUserService } from "../interfaces/i-user-serice";
 import type { IUserRepository } from "../interfaces/user/i-user-repository";
 import { ResponseHelper } from "../utils/response-helper";
 import type { ChangePasswordPayload } from "../interfaces/user/i-crud-controller";
+import type { ServerRequest } from "../config/interfaces/i-request";
+import { UPLOAD_PATHS } from "../config/config";
+import {
+  deleteFiles,
+  handleFileUpload,
+  type UploadResult,
+} from "../utils/upload-helper";
+import type { User } from "../models/user";
 
 export class UserService implements IUserService {
   constructor(private userRepository: IUserRepository) {}
@@ -13,11 +21,6 @@ export class UserService implements IUserService {
 
     const user = await this.userRepository.findById(userId, 0);
     return ResponseHelper.success(user);
-  }
-
-  async getAllUsers(): Promise<Response> {
-    const users = await this.userRepository.findAll();
-    return ResponseHelper.success(users);
   }
 
   async changePassword(
@@ -55,5 +58,36 @@ export class UserService implements IUserService {
     await this.userRepository.changePassword(userId, hashPassword);
 
     return ResponseHelper.success("Password changed successfully");
+  }
+
+  async updateProfile(
+    req: ServerRequest,
+    user: User,
+    formData: FormData,
+  ): Promise<Response> {
+    const storePath = `${UPLOAD_PATHS.images}-${req.user?._id}`;
+    const userExist = await this.userRepository.findById(req.user?._id, 0);
+    if (formData.has("image")) {
+      const result = (await handleFileUpload(formData, {
+        fieldName: "image",
+        storePath: storePath,
+        fileName: new Date().getTime().toString(),
+        multiple: false,
+        writeToDisk: true,
+      })) as UploadResult;
+      if (result) {
+        user.image = result.fileName;
+        deleteFiles(userExist?.image, storePath);
+      } else {
+        user.image = userExist?.image;
+      }
+    }
+
+    const updatedUser = await this.userRepository.updateProfile(
+      req.user?._id,
+      user,
+    );
+
+    return ResponseHelper.success(updatedUser);
   }
 }

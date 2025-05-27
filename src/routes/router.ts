@@ -7,6 +7,7 @@ import { ResponseHelper } from "../utils/response-helper";
 
 import { RouteRegistry, type RouteHandler } from "./route-registry";
 import type { ServerRequest } from "../config/interfaces/i-request";
+import { Logger } from "../config/logger";
 
 export class Router<T extends Document> {
   private controllers: BaseController<T>[] = [];
@@ -80,7 +81,7 @@ export class Router<T extends Document> {
       const handler = methodHandlers.get(method);
       if (handler) {
         const response = await handler(req);
-        console.log(`${method} ${response.status} ${path}`);
+        Logger.logHttp(method, response.status, path);
         return response;
       }
     }
@@ -93,7 +94,7 @@ export class Router<T extends Document> {
           const params = RouteMatcher.extractParams(routePath, path);
           req.params = params;
           const response = await handler(req);
-          console.log(`${method} ${response.status} ${path}`);
+          Logger.logHttp(method, response.status, path);
           return response;
         }
       }
@@ -101,7 +102,7 @@ export class Router<T extends Document> {
 
     // No handler found
     const response = new Response(`Not Found: ${path}`, { status: 404 });
-    console.log(`${method} ${response.status} ${path}`);
+    Logger.logHttp(method, response.status, path);
     return response;
   }
 }

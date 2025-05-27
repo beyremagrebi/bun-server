@@ -7,11 +7,12 @@ import { Get, Put } from "../routes/router-manager";
 import type { ServerRequest } from "../config/interfaces/i-request";
 import type { User } from "../models/user";
 
+import type { RequestWithPagination } from "../config/interfaces/i-pagination";
+import type { ChangePasswordPayload } from "../interfaces/user/i-crud-controller";
+
 import { UserService } from "../services/user-service";
 import { ResponseHelper } from "../utils/response-helper";
 import { BaseController } from "./base/base-controller";
-import type { RequestWithPagination } from "../config/interfaces/i-pagination";
-import type { ChangePasswordPayload } from "../interfaces/user/i-crud-controller";
 import { userRepository } from "../repositories/user-repository";
 
 class UserController extends BaseController<User> {
@@ -43,11 +44,23 @@ class UserController extends BaseController<User> {
       return ResponseHelper.serverError(String(err));
     }
   }
+
   @Put("/change-password", [authMiddleware])
   async changePassword(req: ServerRequest): Promise<Response> {
     try {
       const body = await this.parseRequestBody<ChangePasswordPayload>(req);
       return this.userService.changePassword(req.user?._id, body);
+    } catch (err) {
+      return ResponseHelper.serverError(String(err));
+    }
+  }
+
+  @Put("/update-profile", [authMiddleware])
+  async updateProfile(req: ServerRequest): Promise<Response> {
+    try {
+      const formData = (await req.formData()) as unknown as FormData;
+      const body = await this.parseFormData<User>(formData);
+      return this.userService.updateProfile(req, body, formData);
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }

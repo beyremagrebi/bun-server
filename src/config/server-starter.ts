@@ -7,6 +7,7 @@ import { ConnectionDatabase } from "./connection-database";
 import { EnvLoader } from "./env";
 import { ServerRequest } from "./interfaces/i-request";
 import type { IServerStarter } from "./interfaces/i-server-starter";
+import { handleUploadsRequest } from "./uploads-response";
 
 export class ServerStarter implements IServerStarter {
   private port = 6000;
@@ -40,9 +41,21 @@ export class ServerStarter implements IServerStarter {
         if (req.method === "OPTIONS") {
           return handleOptionsRequest();
         }
-        const enhancedRequest = new ServerRequest(req);
-        const response = await router.router.handleRequest(enhancedRequest);
-        return createCorsResponse(response);
+        const url = new URL(req.url);
+
+        if (url.pathname === "/") {
+          return new Response("server is running", { status: 200 });
+        }
+        const uploadsResponse = await handleUploadsRequest(url);
+        if (uploadsResponse) return uploadsResponse;
+        else {
+          const enhancedRequest = new ServerRequest(req);
+          const response = await router.router.handleRequest(enhancedRequest);
+          if (response.status === 404) {
+            return new Response("Not Found", { status: 404 });
+          }
+          return createCorsResponse(response);
+        }
       },
     });
 

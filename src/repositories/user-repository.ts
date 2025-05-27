@@ -35,14 +35,20 @@ export class userRepository implements IUserRepository {
     return this.collection.findOne({ userName: username });
   }
 
-  async findAll(): Promise<User[]> {
-    return this.collection.find().toArray();
-  }
-
   async changePassword(userId: ObjectId, newPassword: string): Promise<void> {
     this.collection.updateOne(
       { _id: userId },
       { $set: { password: newPassword } },
     );
+  }
+
+  async updateProfile(userId: ObjectId, userData: User): Promise<User | null> {
+    const updatedUser = await this.collection.findOneAndUpdate(
+      { _id: userId },
+      { $set: userData },
+      { returnDocument: "after", projection: { password: 0 } },
+    );
+
+    return updatedUser;
   }
 }

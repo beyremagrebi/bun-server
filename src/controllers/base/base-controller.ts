@@ -89,4 +89,18 @@ export abstract class BaseController<T extends Document>
       throw new Error("Invalid request body format");
     }
   }
+
+  async parseFormData<U>(formData: FormData): Promise<U> {
+    try {
+      const formObject: Record<string, string> = {};
+      for (const [key, value] of formData.entries()) {
+        formObject[key] = value;
+      }
+
+      return formObject as unknown as U;
+    } catch (err) {
+      console.error("Error parsing request body:", err);
+      throw new Error("Invalid request body format");
+    }
+  }
 }
