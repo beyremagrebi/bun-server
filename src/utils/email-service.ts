@@ -1,7 +1,11 @@
 import sgMail from "@sendgrid/mail";
 import { Logger } from "../config/logger";
-
-sgMail.setApiKey("SG.your_sendgrid_api_key_here");
+import { EnvLoader } from "../config/env";
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+if (!SENDGRID_API_KEY) {
+  throw new Error("SendGrid API key is missing in environment variables");
+}
+sgMail.setApiKey(SENDGRID_API_KEY);
 
 type SendEmailOptions = {
   to: string;
@@ -48,18 +52,15 @@ export async function sendEmail({
 
   const msg = {
     to,
-    from: "proservices.square@gmail.com", // MUST be a verified sender on SendGrid
+    from: EnvLoader.emailSender, // MUST be a verified sender on SendGrid
     subject: subject || "",
     text: text || "",
     html: html || "",
   };
 
   try {
-    const response = await sgMail.send(msg);
-    Logger.success(
-      `Email sent to ${to} with subject "${subject}" [${response}]`,
-      false,
-    );
+    await sgMail.send(msg);
+    Logger.success(`Email sent to ${to} successfully.`, false);
   } catch (error) {
     Logger.error(`Failed to send email: ${error}`);
   }
