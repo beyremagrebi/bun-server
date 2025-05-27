@@ -1,4 +1,4 @@
-import { Collection } from "mongodb";
+import { Collection, ObjectId } from "mongodb";
 import { authMiddleware } from "../middleware/aut-middleware";
 import { paginationMiddleware } from "../middleware/pagination-middleware";
 import { CollectionsManager } from "../models/base/collection-manager";
@@ -36,10 +36,21 @@ class UserController extends BaseController<User> {
     }
   }
 
-  @Get("/by-id", [authMiddleware])
-  async getById(req: ServerRequest): Promise<Response> {
+  @Get("/current-user", [authMiddleware])
+  async getCurrentUser(req: ServerRequest): Promise<Response> {
     try {
       return this.userService.findUserById(req.user?._id);
+    } catch (err) {
+      return ResponseHelper.serverError(String(err));
+    }
+  }
+  @Get("/by-id/:id", [authMiddleware])
+  async getById(req: ServerRequest): Promise<Response> {
+    try {
+      if (!req.params.id || !ObjectId.isValid(req.params.id)) {
+        return ResponseHelper.error("Invalid user ID", 400);
+      }
+      return this.userService.findUserById(new ObjectId(req.params.id));
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }
