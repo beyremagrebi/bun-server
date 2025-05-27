@@ -11,7 +11,6 @@ import { createUser } from "../utils/auth";
 import { sendEmail } from "../utils/email-service";
 import { ResponseHelper } from "../utils/response-helper";
 import { tokenService } from "./token-service";
-import { CollectionsManager } from "../models/base/collection-manager";
 export class AuthService implements IAuthService {
   constructor(
     private userRepository: IUserRepository,
@@ -123,7 +122,7 @@ export class AuthService implements IAuthService {
     const otp = crypto.randomInt(100000, 999999).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
     const verificationUrl = "https://f94e-197-27-119-24.ngrok-free.app/verify";
-    const user = await CollectionsManager.userCollection.findOne({ email });
+    const user = await this.userRepository.findByEmail(email);
     if (user) {
       return ResponseHelper.error("User already exists with this email", 400);
     }
