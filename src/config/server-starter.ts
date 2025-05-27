@@ -51,7 +51,6 @@ export class ServerStarter implements IServerStarter {
         else {
           const enhancedRequest = new ServerRequest(req);
           const response = await router.router.handleRequest(enhancedRequest);
-
           return createCorsResponse(response);
         }
       },

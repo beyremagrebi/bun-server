@@ -99,7 +99,6 @@ export class Router<T extends Document> {
         }
       }
     }
-
     // No handler found
     const response = new Response(`Not Found: ${path}`, { status: 404 });
     Logger.logHttp(method, response.status, path);
