@@ -64,7 +64,7 @@ export class ServerStarter implements IServerStarter {
       await this.connection();
       await this.listen(this.port);
     } catch (error) {
-      console.error("Failed to start server:", error);
+      Logger.error(`Failed to start server: ${error}`, true);
       process.exit(1);
     }
   }
