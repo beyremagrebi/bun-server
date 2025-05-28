@@ -7,4 +7,3 @@ const server = new ServerStarter(
   Number(EnvLoader.port),
 );
 server.start();
-// test
