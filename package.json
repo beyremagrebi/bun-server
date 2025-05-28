@@ -17,6 +17,7 @@
     "typescript": "^5"
   },
   "scripts": {
+    "predev": "bun scripts/check-pre-commit.ts",
     "dev": "bun --watch ./src/server.ts",
     "format": "bun prettier --write ./src",
     "lints": "bun eslint ./src --ext .ts,.js"

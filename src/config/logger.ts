@@ -31,10 +31,14 @@ export class Logger {
     const timestamp = showTimestamp
       ? `${COLORS.TIME}[${new Date().toISOString()}]${COLORS.RESET} `
       : "";
-
+    let result = "";
     const color = COLORS[level];
-    const badge = `${COLORS.SUCCESS} ✔ ${COLORS.RESET}`;
-    return `${timestamp} ${badge} ${color}${level}:${COLORS.RESET} ${message}`;
+    if (level == LogLevel.SUCCESS) {
+      const badge = `${COLORS.SUCCESS} ✔ ${COLORS.RESET}`;
+      result = `${timestamp} ${badge} ${color}${level}:${COLORS.RESET} ${message}`;
+    }
+    result = `${timestamp} ${color}${level}:${COLORS.RESET} ${message}`;
+    return result;
   }
 
   static info(message: string, showTimestamp: boolean = true) {
