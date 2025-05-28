@@ -1,4 +1,3 @@
-import type { Document } from "mongodb";
 import type { BaseController } from "../controllers/base/base-controller";
 import { routes, type RouteDefinition } from "../types/route-types";
 import { RouteMatcher } from "./route-matcher";
@@ -8,8 +7,9 @@ import { ResponseHelper } from "../utils/response-helper";
 import { RouteRegistry, type RouteHandler } from "./route-registry";
 import type { ServerRequest } from "../config/interfaces/i-request";
 import { Logger } from "../config/logger";
+import type { BaseModel } from "../models/base/base-model";
 
-export class Router<T extends Document> {
+export class Router<T extends BaseModel> {
   private controllers: BaseController<T>[] = [];
   private routeRegistry = new RouteRegistry<T>();
 

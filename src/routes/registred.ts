@@ -1,8 +1,8 @@
-import type { Document } from "mongodb";
 import type { BaseController } from "../controllers/base/base-controller";
 import { Router } from "./router";
+import type { BaseModel } from "../models/base/base-model";
 
-export class Registred<T extends Document> {
+export class Registred<T extends BaseModel> {
   protected Controllers: Array<new () => BaseController<T>> = [];
   public router: Router<T>;
 

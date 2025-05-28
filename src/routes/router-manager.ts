@@ -1,4 +1,4 @@
-import type { Document } from "mongodb";
+import type { BaseModel } from "../models/base/base-model";
 import {
   routes,
   type Constructor,
@@ -7,7 +7,7 @@ import {
 } from "../types/route-types";
 
 function createMethodDecorator(method: string) {
-  return <T extends Document>(
+  return <T extends BaseModel>(
       path: string,
       middleware: ExpressMiddleware[] = [],
     ) =>

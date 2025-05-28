@@ -6,9 +6,8 @@ export function createCorsResponse(response: Response): Response {
     "GET, POST, PUT, DELETE, PATCH, OPTIONS",
   );
   headers.set("Access-Control-Allow-Headers", "Content-Type");
-  if (response.status == 404) {
-    return response;
-  }
+  headers.set("Content-Type", "application/json");
+
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,

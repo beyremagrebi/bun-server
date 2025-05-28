@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from "mongodb";
+import { Collection } from "mongodb";
 import { authMiddleware } from "../middleware/aut-middleware";
 import { paginationMiddleware } from "../middleware/pagination-middleware";
 import { CollectionsManager } from "../models/base/collection-manager";
@@ -44,17 +44,17 @@ class UserController extends BaseController<User> {
       return ResponseHelper.serverError(String(err));
     }
   }
-  @Get("/by-id/:id", [authMiddleware])
-  async getById(req: ServerRequest): Promise<Response> {
-    try {
-      if (!req.params.id || !ObjectId.isValid(req.params.id)) {
-        return ResponseHelper.error("Invalid user ID", 400);
-      }
-      return this.userService.findUserById(new ObjectId(req.params.id));
-    } catch (err) {
-      return ResponseHelper.serverError(String(err));
-    }
-  }
+  // @Get("/by-id/:id", [authMiddleware])
+  // async getById(req: ServerRequest): Promise<Response> {
+  //   try {
+  //     if (!req.params.id || !ObjectId.isValid(req.params.id)) {
+  //       return ResponseHelper.error("Invalid user ID", 400);
+  //     }
+  //     return super.getById(new ObjectId(req.params.id));
+  //   } catch (err) {
+  //     return ResponseHelper.serverError(String(err));
+  //   }
+  // }
 
   @Put("/change-password", [authMiddleware])
   async changePassword(req: ServerRequest): Promise<Response> {
