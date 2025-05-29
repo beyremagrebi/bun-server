@@ -1,8 +1,14 @@
 {
-  "name": "cv-tech-backend",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.5",
+    "@types/validator": "^13.15.1",
+    "crypto": "^1.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "jwt-decode": "^4.0.0",
+    "mongodb": "^6.16.0",
+    "path": "^0.12.7",
+    "validator": "^13.15.0"
+  },
   "devDependencies": {
     "@eslint/js": "^9.27.0",
     "@eslint/json": "^0.12.0",
@@ -13,23 +19,16 @@
     "prettier": "^3.5.3",
     "typescript-eslint": "^8.32.1"
   },
+  "module": "index.ts",
+  "name": "cv-tech-backend",
   "peerDependencies": {
     "typescript": "^5"
   },
+  "private": true,
   "scripts": {
-    "predev": "bun scripts/check-pre-commit.ts",
     "dev": "bun --watch ./src/server.ts",
     "format": "bun prettier --write ./src",
     "lints": "bun eslint ./src --ext .ts,.js"
   },
-  "dependencies": {
-    "@sendgrid/mail": "^8.1.5",
-    "@types/validator": "^13.15.1",
-    "crypto": "^1.0.1",
-    "jsonwebtoken": "^9.0.2",
-    "jwt-decode": "^4.0.0",
-    "mongodb": "^6.16.0",
-    "path": "^0.12.7",
-    "validator": "^13.15.0"
-  }
+  "type": "module"
 }

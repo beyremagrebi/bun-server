@@ -20,3 +20,4 @@ try {
   );
   process.exit(1);
 }
+// "predev": "bun scripts/check-pre-commit.ts",
