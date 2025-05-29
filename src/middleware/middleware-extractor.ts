@@ -1,3 +1,4 @@
+import { ServerRequest } from "../config/interfaces/i-request";
 import type { ExpressMiddleware } from "../types/route-types";
 
 export class MiddlewareExecutor {
@@ -5,14 +6,14 @@ export class MiddlewareExecutor {
     return value instanceof Response;
   }
 
-  static isRequest(value: unknown): value is Request {
-    return value instanceof Request;
+  static isRequest(value: unknown): value is ServerRequest {
+    return value instanceof ServerRequest;
   }
 
   static async executeMiddlewareChain(
     middlewareChain: Array<ExpressMiddleware>,
-    req: Request,
-  ): Promise<Request | Response> {
+    req: ServerRequest,
+  ): Promise<ServerRequest | Response> {
     let currentRequest = req;
 
     for (const middleware of middlewareChain) {

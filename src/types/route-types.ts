@@ -1,6 +1,7 @@
 import type { Document } from "mongodb";
+import type { ServerRequest } from "../config/interfaces/i-request";
 
-export type ExpressMiddleware = (req: Request) => void;
+export type ExpressMiddleware = (req: ServerRequest) => void;
 export type RouteDefinition<T extends Document> = {
   path: string;
   method: string;
@@ -9,8 +10,8 @@ export type RouteDefinition<T extends Document> = {
 };
 
 export type MiddlewareFunction = (
-  req: Request,
-) => Promise<Request | Response | boolean | void>;
+  req: ServerRequest,
+) => Promise<ServerRequest | Response | boolean | void>;
 
 export type Constructor<T extends Document> = new (...args: Document[]) => T;
 

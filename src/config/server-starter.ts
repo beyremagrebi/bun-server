@@ -48,7 +48,7 @@ export class ServerStarter implements IServerStarter {
         const uploadsResponse = await handleUploadsRequest(url);
         if (uploadsResponse) return uploadsResponse;
         else {
-          const enhancedRequest = new ServerRequest(req.clone() as Request);
+          const enhancedRequest = new ServerRequest(req);
           const response = await router.router.handleRequest(enhancedRequest);
           return createCorsResponse(response);
         }

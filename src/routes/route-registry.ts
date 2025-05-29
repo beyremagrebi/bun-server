@@ -1,8 +1,9 @@
+import type { ServerRequest } from "../config/interfaces/i-request";
 import type { BaseController } from "../controllers/base/base-controller";
-import type { RouteDefinition } from "../types/route-types";
 import type { BaseModel } from "../models/base/base-model";
+import type { RouteDefinition } from "../types/route-types";
 
-export type RouteHandler = (req: Request) => Response | Promise<Response>;
+export type RouteHandler = (req: ServerRequest) => Response | Promise<Response>;
 
 export class RouteRegistry<T extends BaseModel> {
   private routeHandlers: Map<string, Map<string, RouteHandler>> = new Map();

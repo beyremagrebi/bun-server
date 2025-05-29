@@ -1,7 +1,8 @@
+import type { ServerRequest } from "../config/interfaces/i-request";
 import { verifyToken } from "../utils/j-w-t";
 import { ResponseHelper } from "../utils/response-helper";
 
-export async function authMiddleware(req: Request) {
+export async function authMiddleware(req: ServerRequest) {
   try {
     const authHeader = req.headers.get("Authorization");
 

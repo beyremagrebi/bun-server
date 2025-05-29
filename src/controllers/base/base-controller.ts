@@ -87,13 +87,8 @@ export abstract class BaseController<T extends BaseModel>
 
   async parseRequestBody<U>(req: ServerRequest): Promise<U> {
     try {
-      const contentType = req.headers.get("content-type") || "";
-
-      if (contentType.includes("application/json")) {
-        const json = await req.json();
-        return json as U;
-      }
-      throw new Error("Unsupported content type");
+      const json = await req.originalRequest.json();
+      return json as U;
     } catch (error) {
       console.error("Error parsing request body:", error);
       throw new Error("Invalid request body format");

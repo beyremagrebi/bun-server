@@ -37,9 +37,9 @@ class AuthController extends BaseController<RefreshToken> {
   @Post("/login")
   async login(req: ServerRequest): Promise<Response> {
     try {
-      const body =
-        await this.parseRequestBody<OptionalUnlessRequiredId<User>>(req);
-      return this.authService.login(body.identifier, body.password);
+      const body = await req.originalRequest.json();
+
+      return ResponseHelper.success(body);
     } catch (err) {
       return ResponseHelper.error(String(err));
     }
