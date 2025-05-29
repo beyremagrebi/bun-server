@@ -37,9 +37,11 @@ class AuthController extends BaseController<RefreshToken> {
   @Post("/login")
   async login(req: ServerRequest): Promise<Response> {
     try {
-      const body =
-        await this.parseRequestBody<OptionalUnlessRequiredId<User>>(req);
-      return this.authService.login(body.identifier, body.password);
+      // const body =
+      //   await this.parseRequestBody<OptionalUnlessRequiredId<User>>(req);
+      const body = await req.json(); // Parse the request body as JSON
+      const user = body as User;
+      return this.authService.login(user.identifier, user.password);
     } catch (err) {
       return ResponseHelper.error(String(err));
     }
@@ -79,6 +81,7 @@ class AuthController extends BaseController<RefreshToken> {
     try {
       const body =
         await this.parseRequestBody<OptionalUnlessRequiredId<User>>(req);
+
       return this.authService.verifyOtp(String(req.params.otp), body);
     } catch (err) {
       return ResponseHelper.serverError(String(err));
