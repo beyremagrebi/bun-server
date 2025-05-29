@@ -1,4 +1,3 @@
-import Bun from "bun"; // Declare the Bun variable
 import type { BaseController } from "../controllers/base/base-controller";
 
 import { Registred } from "../routes/registred";
@@ -7,8 +6,8 @@ import { ConnectionDatabase } from "./connection-database";
 import { EnvLoader } from "./env";
 import { ServerRequest } from "./interfaces/i-request";
 import type { IServerStarter } from "./interfaces/i-server-starter";
-import { handleUploadsRequest } from "./uploads-response";
 import { Logger } from "./logger";
+import { handleUploadsRequest } from "./uploads-response";
 
 export class ServerStarter implements IServerStarter {
   private port = 6000;
@@ -49,7 +48,7 @@ export class ServerStarter implements IServerStarter {
         const uploadsResponse = await handleUploadsRequest(url);
         if (uploadsResponse) return uploadsResponse;
         else {
-          const enhancedRequest = new ServerRequest(req);
+          const enhancedRequest = new ServerRequest(req.clone() as Request);
           const response = await router.router.handleRequest(enhancedRequest);
           return createCorsResponse(response);
         }
