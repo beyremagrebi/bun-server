@@ -1,4 +1,4 @@
-# cv-tech-backend
+# bun-server-backend
 
 To install dependencies:
 
