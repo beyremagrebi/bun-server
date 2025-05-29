@@ -10,4 +10,6 @@ export interface IAuthService {
     userData: OptionalUnlessRequiredId<User>,
   ): Promise<Response>;
   refreshToken(refreshToken: string): Promise<Response>;
+  forgetPassword(email: string): Promise<Response>;
+  validateResetToken(email: string): Promise<Response>;
 }

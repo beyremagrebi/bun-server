@@ -18,4 +18,9 @@ export class EnvLoader {
     (Bun.env.EXP_ACCESS_TOKEN as StringValue) || "15m";
   static readonly ExpRefreshToken: StringValue | number =
     (Bun.env.EXP_REFRESH_TOKEN as StringValue) || "7d";
+
+  static readonly resetTokenExpiry: number = parseInt(
+    Bun.env.RESET_TOKEN_EXPIRY_MS || "3600000",
+    10,
+  );
 }

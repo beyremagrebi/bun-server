@@ -1,9 +1,13 @@
 import * as crypto from "crypto";
 import { ObjectId, type OptionalUnlessRequiredId } from "mongodb";
+import { EnvLoader } from "../config/env";
+import { Logger } from "../config/logger";
 import type { IAuthService } from "../interfaces/auth/i-auth-service";
+import type { IEmailVerificationRepository } from "../interfaces/auth/i-email-verification-token-repository";
 import type { IOtpVerificationRepository } from "../interfaces/auth/i-otp--verification-repository";
 import type { IRefreshTokenRepository } from "../interfaces/auth/i-refresh-token-repository";
 import type { IUserRepository } from "../interfaces/user/i-user-repository";
+import type { EmailVerificationToken } from "../models/email-verification-token";
 import type { OtpVerification } from "../models/otp-verification";
 import type { RefreshToken } from "../models/refresh-token";
 import type { User } from "../models/user";
@@ -11,12 +15,13 @@ import { createUser } from "../utils/auth";
 import { sendEmail } from "../utils/email-service";
 import { ResponseHelper } from "../utils/response-helper";
 import { tokenService } from "./token-service";
-import { Logger } from "../config/logger";
+import { getForgotPasswordEmailContent } from "../templates/forget-password-email";
 export class AuthService implements IAuthService {
   constructor(
     private userRepository: IUserRepository,
     private refreshTokenRepository: IRefreshTokenRepository,
     private otpVerificationRepository: IOtpVerificationRepository,
+    private emailVerificationRepository: IEmailVerificationRepository,
   ) {}
 
   async login(
@@ -165,5 +170,60 @@ export class AuthService implements IAuthService {
     await this.otpVerificationRepository.deleteById(otpRecord._id);
 
     return createUser(userData);
+  }
+
+  async forgetPassword(email: string): Promise<Response> {
+    try {
+      const user = await this.userRepository.findByEmail(email);
+      if (!user) {
+        return ResponseHelper.error("User not found", 404);
+      }
+
+      const rawToken = crypto.randomBytes(32).toString("hex");
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(rawToken)
+        .digest("hex");
+      const expiresAt = new Date(Date.now() + EnvLoader.resetTokenExpiry); // From .env
+
+      await this.emailVerificationRepository.deleteAll(user._id); // Delete old tokens
+
+      const tokenDoc: EmailVerificationToken = {
+        userId: user._id,
+        tokenHash: hashedToken,
+        expiresAt,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      await this.emailVerificationRepository.create(tokenDoc);
+
+      const resetLink = `https://7a6b-196-229-193-128.ngrok-free.app/?token=${rawToken}`;
+      const { subject, text, html } = getForgotPasswordEmailContent(resetLink);
+      await sendEmail({ to: email, subject, text, html });
+
+      return ResponseHelper.success("Password reset link sent to your email.");
+    } catch (err) {
+      return ResponseHelper.serverError(String(err));
+    }
+  }
+
+  async validateResetToken(token: string): Promise<Response> {
+    try {
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
+      const tokenToVerfi =
+        await this.emailVerificationRepository.findByTokenHash(hashedToken);
+      if (!tokenToVerfi) {
+        return ResponseHelper.error("Invalid or expired reset token", 400);
+      }
+      if (tokenToVerfi.expiresAt < new Date()) {
+        return ResponseHelper.error("Reset token has expired", 410);
+      }
+      return ResponseHelper.success("Valid reset token");
+    } catch (err) {
+      return ResponseHelper.serverError(String(err));
+    }
   }
 }

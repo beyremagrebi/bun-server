@@ -4,12 +4,14 @@ import type { User } from "../user";
 import type { Post } from "../post";
 import type { RefreshToken } from "../refresh-token";
 import type { OtpVerification } from "../otp-verification";
+import type { EmailVerificationToken } from "../email-verification-token";
 
 export class CollectionsManager {
   static userCollection: Collection<User>;
   static postCollection: Collection<Post>;
   static refreshCollection: Collection<RefreshToken>;
   static otpCollection: Collection<OtpVerification>;
+  static emailVerfificationTokenCollection: Collection<EmailVerificationToken>;
 
   static initializeCollections(client: MongoClient) {
     const db = client.db(EnvLoader.databaseName);
@@ -17,6 +19,8 @@ export class CollectionsManager {
     this.postCollection = db.collection<Post>("posts");
     this.otpCollection = db.collection<OtpVerification>("otp-verifications");
     this.refreshCollection = db.collection<RefreshToken>("refresh-tokens");
+    this.emailVerfificationTokenCollection =
+      db.collection<EmailVerificationToken>("email-verification-tokens");
   }
 
   static get collections() {

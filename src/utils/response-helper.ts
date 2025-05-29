@@ -9,7 +9,9 @@ export class ResponseHelper {
    * @returns Response object
    */
   static success<T>(data: T, status = 200): Response {
-    return new Response(JSON.stringify(data), {
+    const responseData = typeof data === "string" ? { message: data } : data;
+
+    return new Response(JSON.stringify(responseData), {
       status,
       headers: {
         "Content-Type": "application/json",
