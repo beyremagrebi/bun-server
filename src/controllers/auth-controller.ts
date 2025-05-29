@@ -40,7 +40,7 @@ class AuthController extends BaseController<RefreshToken> {
       const body =
         await this.parseRequestBody<OptionalUnlessRequiredId<User>>(req);
 
-      return ResponseHelper.success(body);
+      return this.authService.login(body.identifier, body.password);
     } catch (err) {
       return ResponseHelper.error(String(err));
     }
