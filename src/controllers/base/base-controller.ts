@@ -1,15 +1,20 @@
-import type { Collection, ObjectId, OptionalUnlessRequiredId } from "mongodb";
 import type {
   ICRUDController,
   IRequestBodyParser,
 } from "../../interfaces/user/i-crud-controller";
 
+import type {
+  Collection,
+  Filter,
+  ObjectId,
+  OptionalUnlessRequiredId,
+} from "mongodb";
 import type { RequestWithPagination } from "../../config/interfaces/i-pagination";
 import type { ServerRequest } from "../../config/interfaces/i-request";
 import { autoPaginateResponse } from "../../middleware/pagination-middleware";
+import type { BaseModel } from "../../models/base/base-model";
 import { Get, Post } from "../../routes/router-manager";
 import { ResponseHelper } from "../../utils/response-helper";
-import type { BaseModel } from "../../models/base/base-model";
 
 export abstract class BaseController<T extends BaseModel>
   implements ICRUDController, IRequestBodyParser
@@ -56,13 +61,16 @@ export abstract class BaseController<T extends BaseModel>
     }
   }
 
-  async getById(id: ObjectId): Promise<Response> {
+  async getById(_id: ObjectId): Promise<Response> {
     try {
-      // const data = await this.collection.findOne({_id:});
-      // if(data){
-      //   return ResponseHelper.notFound('data not found');
-      // }
-      return ResponseHelper.success(id);
+      const filter = { _id } as Filter<T>;
+      const data = await this.collection.findOne(filter);
+
+      if (!data) {
+        return ResponseHelper.notFound("Data not found");
+      }
+
+      return ResponseHelper.success(data);
     } catch (error) {
       return ResponseHelper.serverError(String(error));
     }

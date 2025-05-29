@@ -1,4 +1,3 @@
-import { Collection } from "mongodb";
 import { authMiddleware } from "../middleware/aut-middleware";
 import { paginationMiddleware } from "../middleware/pagination-middleware";
 import { CollectionsManager } from "../models/base/collection-manager";
@@ -10,10 +9,11 @@ import type { User } from "../models/user";
 import type { RequestWithPagination } from "../config/interfaces/i-pagination";
 import type { ChangePasswordPayload } from "../interfaces/user/i-crud-controller";
 
+import type { Collection } from "mongodb";
+import { userRepository } from "../repositories/user-repository";
 import { UserService } from "../services/user-service";
 import { ResponseHelper } from "../utils/response-helper";
 import { BaseController } from "./base/base-controller";
-import { userRepository } from "../repositories/user-repository";
 
 class UserController extends BaseController<User> {
   private userService: UserService;
@@ -44,17 +44,14 @@ class UserController extends BaseController<User> {
       return ResponseHelper.serverError(String(err));
     }
   }
-  // @Get("/by-id/:id", [authMiddleware])
-  // async getById(req: ServerRequest): Promise<Response> {
-  //   try {
-  //     if (!req.params.id || !ObjectId.isValid(req.params.id)) {
-  //       return ResponseHelper.error("Invalid user ID", 400);
-  //     }
-  //     return super.getById(new ObjectId(req.params.id));
-  //   } catch (err) {
-  //     return ResponseHelper.serverError(String(err));
-  //   }
-  // }
+  @Get("/by-id/:id", [authMiddleware])
+  async getUserById(req: ServerRequest): Promise<Response> {
+    try {
+      return this.userService.findUserById(req.user?._id);
+    } catch (err) {
+      return ResponseHelper.serverError(String(err));
+    }
+  }
 
   @Put("/change-password", [authMiddleware])
   async changePassword(req: ServerRequest): Promise<Response> {
