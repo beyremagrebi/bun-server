@@ -2,11 +2,13 @@ import type { OptionalUnlessRequiredId } from "mongodb";
 import validator from "validator";
 import { CollectionsManager } from "../models/base/collection-manager";
 import type { User } from "../models/user";
+import { tokenService } from "../services/token-service";
 import { ResponseHelper } from "./response-helper";
 import { UtilsFunc } from "./utils-func";
-import { tokenService } from "../services/token-service";
 
-export function getTokenFromHeaders(headers: Headers): string | null {
+export function getTokenFromHeaders(headers: {
+  get(name: string): string | null;
+}): string | null {
   const authHeader =
     headers.get("authorization") || headers.get("Authorization");
 

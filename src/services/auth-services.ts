@@ -228,6 +228,7 @@ export class AuthService implements IAuthService {
         tokenToVerfi.userId,
         newPassword,
       );
+      await this.emailVerificationRepository.deleteAll(tokenToVerfi.userId);
       return ResponseHelper.success("Password Change Successfuly");
     } catch (err) {
       return ResponseHelper.serverError(String(err));
