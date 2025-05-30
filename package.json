@@ -28,7 +28,8 @@
   "scripts": {
     "dev": "bun --watch ./src/server.ts",
     "format": "bun prettier --write ./src",
-    "lints": "bun eslint ./src --ext .ts,.js"
+    "lints": "bun eslint ./src --ext .ts,.js",
+    "predev": "bun scripts/check-pre-commit.ts"
   },
   "type": "module"
 }

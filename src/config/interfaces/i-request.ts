@@ -16,7 +16,6 @@ import { URL } from "url";
 import type { User } from "../../models/user";
 
 export class ServerRequest implements Request {
-  // Wrapped original request
   private original: Request;
 
   // Custom properties
@@ -24,7 +23,6 @@ export class ServerRequest implements Request {
   query: Record<string, string | string[]> = {};
   user: User | null = null;
 
-  // Required properties from Request interface
   headers: Headers;
   method: string;
   url: string;
