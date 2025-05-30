@@ -7,7 +7,7 @@ import type { RefreshToken } from "../models/refresh-token";
 import type { User } from "../models/user";
 import { RefreshTokenRepository } from "../repositories/refresh-token-repository";
 
-import { Get, Post } from "../routes/router-manager";
+import { Get, Post, Put } from "../routes/router-manager";
 import { AuthService } from "../services/auth-services";
 
 import { EmailVerificationTokenRespository } from "../repositories/email-verification-token-repository";
@@ -99,6 +99,22 @@ class AuthController extends BaseController<RefreshToken> {
   async validateResetToken(req: ServerRequest): Promise<Response> {
     try {
       return this.authService.validateResetToken(String(req.params.token));
+    } catch (err) {
+      return ResponseHelper.serverError(String(err));
+    }
+  }
+  @Put("/change-password/:token")
+  async createNewPassword(req: ServerRequest): Promise<Response> {
+    try {
+      const body = await this.parseRequestBody<{ password: string }>(req);
+      if (!body.password) {
+        return ResponseHelper.error("Password is required");
+      }
+
+      const token = String(req.params.token);
+      const newPassword = body.password;
+
+      return this.authService.createNewPassword(token, newPassword);
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }

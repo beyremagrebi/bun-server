@@ -60,7 +60,6 @@ export abstract class BaseController<T extends BaseModel>
       return ResponseHelper.serverError(String(error));
     }
   }
-
   async getById(_id: ObjectId): Promise<Response> {
     try {
       const filter = { _id } as Filter<T>;

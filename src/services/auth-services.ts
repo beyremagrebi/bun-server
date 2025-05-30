@@ -11,11 +11,11 @@ import type { EmailVerificationToken } from "../models/email-verification-token"
 import type { OtpVerification } from "../models/otp-verification";
 import type { RefreshToken } from "../models/refresh-token";
 import type { User } from "../models/user";
+import { getForgotPasswordEmailContent } from "../templates/forget-password-email";
 import { createUser } from "../utils/auth";
 import { sendEmail } from "../utils/email-service";
 import { ResponseHelper } from "../utils/response-helper";
 import { tokenService } from "./token-service";
-import { getForgotPasswordEmailContent } from "../templates/forget-password-email";
 export class AuthService implements IAuthService {
   constructor(
     private userRepository: IUserRepository,
@@ -202,6 +202,33 @@ export class AuthService implements IAuthService {
       await sendEmail({ to: email, subject, text, html });
 
       return ResponseHelper.success("Password reset link sent to your email.");
+    } catch (err) {
+      return ResponseHelper.serverError(String(err));
+    }
+  }
+
+  async createNewPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<Response> {
+    try {
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
+      const tokenToVerfi =
+        await this.emailVerificationRepository.findByTokenHash(hashedToken);
+      if (!tokenToVerfi) {
+        return ResponseHelper.error("Invalid or expired reset token", 400);
+      }
+      if (tokenToVerfi.expiresAt < new Date()) {
+        return ResponseHelper.error("Reset token has expired", 410);
+      }
+      await this.userRepository.changePassword(
+        tokenToVerfi.userId,
+        newPassword,
+      );
+      return ResponseHelper.success("Password Change Successfuly");
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }
