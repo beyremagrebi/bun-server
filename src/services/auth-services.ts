@@ -197,7 +197,7 @@ export class AuthService implements IAuthService {
       };
       await this.emailVerificationRepository.create(tokenDoc);
 
-      const resetLink = `https://7a6b-196-229-193-128.ngrok-free.app/?token=${rawToken}`;
+      const resetLink = `https://7a6b-196-229-193-128.ngrok-free.app/reset-password/${rawToken}`;
       const { subject, text, html } = getForgotPasswordEmailContent(resetLink);
       await sendEmail({ to: email, subject, text, html });
 
