@@ -1,11 +1,12 @@
-import type { PaginatedRequest } from "../config/interfaces/i-pagination";
+import type { RequestWithPagination } from "../config/interfaces/i-pagination";
+import { ServerRequest } from "../config/interfaces/i-request";
 import { ResponseHelper } from "../utils/response-helper";
 
 export async function paginationMiddleware(
-  req: Request,
+  req: ServerRequest,
   defaultLimit = 10,
   maxLimit = 100,
-): Promise<Request | Response> {
+): Promise<ServerRequest | Response> {
   try {
     const url = new URL(req.url);
     const page = parseInt(url.searchParams.get("page") || "1");
@@ -19,7 +20,7 @@ export async function paginationMiddleware(
 
     const skip = (page - 1) * limit;
 
-    const reqWithPagination = new Request(req) as PaginatedRequest;
+    const reqWithPagination = new ServerRequest(req) as RequestWithPagination;
     reqWithPagination.pagination = { skip, take: limit, page, limit };
     reqWithPagination.usePaginationResponse = true;
 
@@ -29,8 +30,8 @@ export async function paginationMiddleware(
   }
 }
 
-function isPaginatedRequest(req: Request): req is PaginatedRequest {
-  const maybePaginated = req as unknown as Partial<PaginatedRequest>;
+function isPaginatedRequest(req: ServerRequest): req is RequestWithPagination {
+  const maybePaginated = req as unknown as Partial<RequestWithPagination>;
   return (
     typeof maybePaginated.usePaginationResponse === "boolean" &&
     typeof maybePaginated.pagination === "object" &&
@@ -41,7 +42,7 @@ function isPaginatedRequest(req: Request): req is PaginatedRequest {
 }
 
 export async function autoPaginateResponse<T>(
-  req: Request,
+  req: RequestWithPagination,
   itemsPromise: Promise<T[]>,
   countPromise: Promise<number>,
 ): Promise<Response> {
@@ -50,15 +51,15 @@ export async function autoPaginateResponse<T>(
   if (isPaginatedRequest(req)) {
     const { pagination } = req;
     const totalCount = await countPromise;
-    const totalPages = Math.ceil(totalCount / pagination.limit);
+    const totalPages = Math.ceil(totalCount / (pagination?.limit || 1));
 
     return ResponseHelper.success({
       data: items,
       pagination: {
         totalCount,
         totalPages,
-        currentPage: pagination.page,
-        limit: pagination.limit,
+        currentPage: pagination?.page || 1,
+        limit: pagination?.limit || 1,
       },
     });
   }

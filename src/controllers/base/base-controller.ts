@@ -60,6 +60,7 @@ export abstract class BaseController<T extends BaseModel>
       return ResponseHelper.serverError(String(error));
     }
   }
+
   async getById(_id: ObjectId): Promise<Response> {
     try {
       const filter = { _id } as Filter<T>;
@@ -86,7 +87,7 @@ export abstract class BaseController<T extends BaseModel>
 
   async parseRequestBody<U>(req: ServerRequest): Promise<U> {
     try {
-      const json = await req.originalRequest.json();
+      const json = await req.json();
       return json as U;
     } catch (error) {
       console.error("Error parsing request body:", error);

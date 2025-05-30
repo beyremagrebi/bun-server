@@ -3,21 +3,20 @@ import { ObjectId } from "mongodb";
 import { URL } from "url";
 import type { User } from "../../models/user";
 
-export class ServerRequest {
-  originalRequest: Request;
+export class ServerRequest extends Request {
   params: Record<string, string>;
   query: Record<string, string | string[]>;
   user?: User | null;
 
   constructor(request: Request) {
-    this.originalRequest = request;
+    super(request);
     this.params = {};
     this.query = this.parseQueryParams();
     this.user = this.getUserFromTokenSync();
   }
 
   private getUserFromTokenSync(): User | null {
-    const authHeader = this.originalRequest.headers.get("authorization");
+    const authHeader = this.headers.get("authorization");
     if (!authHeader) return null;
 
     try {
@@ -33,7 +32,7 @@ export class ServerRequest {
   }
 
   private parseQueryParams(): Record<string, string | string[]> {
-    const url = new URL(this.originalRequest.url);
+    const url = new URL(this.url);
     const query: Record<string, string | string[]> = {};
 
     url.searchParams.forEach((value, key) => {
@@ -49,24 +48,5 @@ export class ServerRequest {
     });
 
     return query;
-  }
-
-  // Optional pass-through methods
-  get method() {
-    return this.originalRequest.method;
-  }
-  get url() {
-    return this.originalRequest.url;
-  }
-  get headers() {
-    return this.originalRequest.headers;
-  }
-
-  async json() {
-    return this.originalRequest.json();
-  }
-
-  async text() {
-    return this.originalRequest.text();
   }
 }

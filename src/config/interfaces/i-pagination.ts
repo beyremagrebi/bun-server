@@ -1,3 +1,5 @@
+import type { ServerRequest } from "./i-request";
+
 export interface PaginationParams {
   page?: number;
   limit?: number;
@@ -10,6 +12,7 @@ export interface PaginationResult {
   limit: number;
 }
 
-export interface RequestWithPagination extends Request {
+export interface RequestWithPagination extends ServerRequest {
   pagination?: PaginationResult;
+  usePaginationResponse?: boolean;
 }
