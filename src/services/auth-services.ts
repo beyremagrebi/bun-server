@@ -197,7 +197,7 @@ export class AuthService implements IAuthService {
       };
       await this.emailVerificationRepository.create(tokenDoc);
 
-      const resetLink = `https://7a6b-196-229-193-128.ngrok-free.app/reset-password/${rawToken}`;
+      const resetLink = `${EnvLoader.frontUrl}/reset-password/${rawToken}`;
       const { subject, text, html } = getForgotPasswordEmailContent(resetLink);
       await sendEmail({ to: email, subject, text, html });
 
@@ -224,11 +224,13 @@ export class AuthService implements IAuthService {
       if (tokenToVerfi.expiresAt < new Date()) {
         return ResponseHelper.error("Reset token has expired", 410);
       }
+      const hashPassword = await Bun.password.hash(newPassword);
       await this.userRepository.changePassword(
         tokenToVerfi.userId,
-        newPassword,
+        hashPassword,
       );
       await this.emailVerificationRepository.deleteAll(tokenToVerfi.userId);
+
       return ResponseHelper.success("Password Change Successfuly");
     } catch (err) {
       return ResponseHelper.serverError(String(err));

@@ -10,7 +10,8 @@ export class EnvLoader {
   static readonly emailSender: string = String(Bun.env.EMAIL_ADRESS);
 
   //OTP
-  static readonly verficationUrl: string = String(Bun.env.VERIFICATION_URL);
+  static readonly verficationUrl: string = `${String(Bun.env.FRONT_URL)}/verify`;
+  static readonly frontUrl: string = String(Bun.env.FRONT_URL);
 
   //TOKEN
   static readonly jwtSecret: string = String(Bun.env.JWT_SECRET);
