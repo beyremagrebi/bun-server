@@ -4,7 +4,9 @@ import { join } from "path";
 import { Logger } from "../src/config/logger";
 
 const hookPath = join(".git", "hooks", "pre-commit");
-
+if (Bun.env.MODEV !== "DEV") {
+  process.exit(0);
+}
 if (!existsSync(hookPath)) {
   Logger.error("Pre-commit hook not installed.", false);
   Logger.info("Run: pip install pre-commit && pre-commit install", false);
