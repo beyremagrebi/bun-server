@@ -1,49 +1,45 @@
+import type { Collection, ObjectId, OptionalUnlessRequiredId } from "mongodb";
+import type { RequestWithPagination } from "../../config/interfaces/i-pagination";
+import type { ServerRequest } from "../../config/interfaces/i-request";
 import type {
   ICRUDController,
   IRequestBodyParser,
-} from "../../interfaces/user/i-crud-controller";
-
-import type {
-  Collection,
-  Filter,
-  ObjectId,
-  OptionalUnlessRequiredId,
-} from "mongodb";
-import type { RequestWithPagination } from "../../config/interfaces/i-pagination";
-import type { ServerRequest } from "../../config/interfaces/i-request";
+} from "../../interfaces/base/i-crud-controller";
 import { autoPaginateResponse } from "../../middleware/pagination-middleware";
 import type { BaseModel } from "../../models/base/base-model";
 import { Get, Post } from "../../routes/router-manager";
+import type { BaseService } from "../../services/base/base-service";
 import { ResponseHelper } from "../../utils/response-helper";
 
-export abstract class BaseController<T extends BaseModel>
+export abstract class BaseController<
+    T extends BaseModel,
+    S extends BaseService<T> = BaseService<T>,
+  >
   implements ICRUDController, IRequestBodyParser
 {
   protected collection: Collection<T>;
+  protected service: S;
   public basePath: string;
 
   constructor(basePath: string) {
-    this.collection = this.initializeCollection();
     this.basePath = basePath;
+    this.collection = this.initializeCollection();
+    this.service = this.createService();
   }
 
   protected abstract initializeCollection(): Collection<T>;
+  protected abstract createService(): S;
 
   @Get("/")
   async getAll(req: RequestWithPagination): Promise<Response> {
     try {
       const pagination = req.pagination;
-      let cursor = this.collection.find();
-
-      if (pagination) {
-        cursor = cursor.skip(pagination.skip).limit(pagination.take);
-      }
-
-      return autoPaginateResponse(
-        req,
-        cursor.toArray(),
-        this.collection.countDocuments(),
+      const dataPromise = this.service.getAll(
+        pagination?.skip,
+        pagination?.take,
       );
+      const totalCount = this.service.countAll();
+      return autoPaginateResponse(req, dataPromise, totalCount);
     } catch (error) {
       return ResponseHelper.serverError(String(error));
     }
@@ -54,8 +50,8 @@ export abstract class BaseController<T extends BaseModel>
     try {
       const body =
         await this.parseRequestBody<OptionalUnlessRequiredId<T>>(req);
-      const { insertedId } = await this.collection.insertOne(body);
-      return ResponseHelper.success({ id: insertedId, ...body });
+      const { insertedId, data } = await this.service.create(body);
+      return ResponseHelper.success({ id: insertedId, ...data });
     } catch (error) {
       return ResponseHelper.serverError(String(error));
     }
@@ -63,13 +59,10 @@ export abstract class BaseController<T extends BaseModel>
 
   async getById(_id: ObjectId): Promise<Response> {
     try {
-      const filter = { _id } as Filter<T>;
-      const data = await this.collection.findOne(filter);
-
+      const data = await this.service.getById(_id);
       if (!data) {
         return ResponseHelper.notFound("Data not found");
       }
-
       return ResponseHelper.success(data);
     } catch (error) {
       return ResponseHelper.serverError(String(error));
@@ -78,8 +71,10 @@ export abstract class BaseController<T extends BaseModel>
 
   async deleteAll(req: ServerRequest): Promise<Response> {
     try {
-      await this.collection.deleteMany();
-      return ResponseHelper.success("sucess delete " + req.url);
+      await this.service.deleteAll();
+      return ResponseHelper.success(
+        "Successfully deleted all data from: " + req.url,
+      );
     } catch (error) {
       return ResponseHelper.serverError(String(error));
     }
@@ -101,11 +96,10 @@ export abstract class BaseController<T extends BaseModel>
       for (const [key, value] of formData.entries()) {
         formObject[key] = value;
       }
-
       return formObject as unknown as U;
     } catch (err) {
-      console.error("Error parsing request body:", err);
-      throw new Error("Invalid request body format");
+      console.error("Error parsing form data:", err);
+      throw new Error("Invalid form data format");
     }
   }
 }

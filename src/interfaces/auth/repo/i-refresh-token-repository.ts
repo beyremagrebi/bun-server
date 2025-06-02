@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import type { RefreshToken } from "../../models/refresh-token";
+import type { RefreshToken } from "../../../models/refresh-token";
 
 export interface IRefreshTokenRepository {
   create(tokenData: RefreshToken): Promise<void>;

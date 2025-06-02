@@ -1,19 +1,23 @@
 import { ObjectId } from "mongodb";
-import type { IUserService } from "../interfaces/i-user-serice";
-import type { IUserRepository } from "../interfaces/user/i-user-repository";
-import { ResponseHelper } from "../utils/response-helper";
-import type { ChangePasswordPayload } from "../interfaces/user/i-crud-controller";
-import type { ServerRequest } from "../config/interfaces/i-request";
 import { UPLOAD_PATHS } from "../config/config";
+import type { ServerRequest } from "../config/interfaces/i-request";
+import type { ChangePasswordPayload } from "../interfaces/base/i-crud-controller";
+import type { IUserRepository } from "../interfaces/user/i-user-repository";
+import type { IUserService } from "../interfaces/user/i-user-service";
+import { CollectionsManager } from "../models/base/collection-manager";
+import type { User } from "../models/user";
+import { ResponseHelper } from "../utils/response-helper";
 import {
   deleteFiles,
   handleFileUpload,
   type UploadResult,
 } from "../utils/upload-helper";
-import type { User } from "../models/user";
+import { BaseService } from "./base/base-service";
 
-export class UserService implements IUserService {
-  constructor(private userRepository: IUserRepository) {}
+export class UserService extends BaseService<User> implements IUserService {
+  constructor(private userRepository: IUserRepository) {
+    super(CollectionsManager.userCollection);
+  }
   async findUserById(userId: ObjectId | undefined): Promise<Response> {
     if (!userId || !ObjectId.isValid(userId)) {
       return ResponseHelper.error("Invalid user ID format", 400);
@@ -80,11 +84,22 @@ export class UserService implements IUserService {
           return ResponseHelper.error("Username already exists", 400);
         }
       }
+      if (user.email) {
+        const existingUser = await this.userRepository.findByEmail(user.email);
+        if (
+          existingUser &&
+          existingUser._id?.toString() !== userId?.toString()
+        ) {
+          return ResponseHelper.error("email already exists", 400);
+        }
+      }
+
       const currentUser = await this.userRepository.findById(userId, 0);
       if (!currentUser) {
         return ResponseHelper.error("User not found", 404);
       }
 
+      // Handle profile image update
       if (formData.has("image")) {
         const result = (await handleFileUpload(formData, {
           fieldName: "image",
@@ -101,6 +116,26 @@ export class UserService implements IUserService {
           user.image = result.fileName;
         } else {
           user.image = currentUser.image;
+        }
+      }
+
+      // Handle cover image update
+      if (formData.has("cover")) {
+        const result = (await handleFileUpload(formData, {
+          fieldName: "cover",
+          storePath,
+          fileName: new Date().getTime().toString() + "_cover",
+          multiple: false,
+          writeToDisk: true,
+        })) as UploadResult;
+
+        if (result?.fileName) {
+          if (currentUser.cover) {
+            deleteFiles(currentUser.cover, storePath);
+          }
+          user.cover = result.fileName;
+        } else {
+          user.cover = currentUser.cover;
         }
       }
 

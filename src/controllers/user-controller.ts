@@ -7,7 +7,7 @@ import type { ServerRequest } from "../config/interfaces/i-request";
 import type { User } from "../models/user";
 
 import type { RequestWithPagination } from "../config/interfaces/i-pagination";
-import type { ChangePasswordPayload } from "../interfaces/user/i-crud-controller";
+import type { ChangePasswordPayload } from "../interfaces/base/i-crud-controller";
 
 import type { Collection } from "mongodb";
 import { userRepository } from "../repositories/user-repository";
@@ -15,14 +15,14 @@ import { UserService } from "../services/user-service";
 import { ResponseHelper } from "../utils/response-helper";
 import { BaseController } from "./base/base-controller";
 
-class UserController extends BaseController<User> {
-  private userService: UserService;
+class UserController extends BaseController<User, UserService> {
+  protected createService(): UserService {
+    return new UserService(new userRepository());
+  }
 
   constructor() {
     super("/user");
-    this.userService = new UserService(new userRepository());
   }
-
   protected initializeCollection(): Collection<User> {
     return CollectionsManager.userCollection;
   }
@@ -39,7 +39,7 @@ class UserController extends BaseController<User> {
   @Get("/current-user", [authMiddleware])
   async getCurrentUser(req: ServerRequest): Promise<Response> {
     try {
-      return this.userService.findUserById(req.user?._id);
+      return this.service.findUserById(req.user?._id);
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }
@@ -47,7 +47,7 @@ class UserController extends BaseController<User> {
   @Get("/by-id/:id", [authMiddleware])
   async getUserById(req: ServerRequest): Promise<Response> {
     try {
-      return this.userService.findUserById(req.user?._id);
+      return this.service.findUserById(req.user?._id);
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }
@@ -57,7 +57,7 @@ class UserController extends BaseController<User> {
   async changePassword(req: ServerRequest): Promise<Response> {
     try {
       const body = await this.parseRequestBody<ChangePasswordPayload>(req);
-      return this.userService.changePassword(req.user?._id, body);
+      return this.service.changePassword(req.user?._id, body);
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }
@@ -68,7 +68,7 @@ class UserController extends BaseController<User> {
     try {
       const formData = (await req.formData()) as unknown as FormData;
       const body = await this.parseFormData<User>(formData);
-      return this.userService.updateProfile(req, body, formData);
+      return this.service.updateProfile(req, body, formData);
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }

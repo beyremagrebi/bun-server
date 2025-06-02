@@ -1,12 +1,4 @@
-import type { BaseModel } from "./base/base-model";
+import type { BaseUser } from "./user/base-user";
+import type { ProfessionalUser } from "./user/professional-user";
 
-export interface User extends BaseModel {
-  firstName: string;
-  lastName: string;
-  userName: string;
-  email: string;
-  password: string;
-  identifier?: string;
-  // info
-  image?: string;
-}
+export type User = BaseUser | ProfessionalUser;

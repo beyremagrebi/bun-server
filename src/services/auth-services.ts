@@ -3,10 +3,12 @@ import { ObjectId, type OptionalUnlessRequiredId } from "mongodb";
 import { EnvLoader } from "../config/env";
 import { Logger } from "../config/logger";
 import type { IAuthService } from "../interfaces/auth/i-auth-service";
-import type { IEmailVerificationRepository } from "../interfaces/auth/i-email-verification-token-repository";
-import type { IOtpVerificationRepository } from "../interfaces/auth/i-otp--verification-repository";
-import type { IRefreshTokenRepository } from "../interfaces/auth/i-refresh-token-repository";
+
+import type { IEmailVerificationRepository } from "../interfaces/auth/repo/i-email-verification-token-repository";
+import type { IOtpVerificationRepository } from "../interfaces/auth/repo/i-otp--verification-repository";
+import type { IRefreshTokenRepository } from "../interfaces/auth/repo/i-refresh-token-repository";
 import type { IUserRepository } from "../interfaces/user/i-user-repository";
+import { CollectionsManager } from "../models/base/collection-manager";
 import type { EmailVerificationToken } from "../models/email-verification-token";
 import type { OtpVerification } from "../models/otp-verification";
 import type { RefreshToken } from "../models/refresh-token";
@@ -15,14 +17,20 @@ import { getForgotPasswordEmailContent } from "../templates/forget-password-emai
 import { createUser } from "../utils/auth";
 import { sendEmail } from "../utils/email-service";
 import { ResponseHelper } from "../utils/response-helper";
+import { BaseService } from "./base/base-service";
 import { tokenService } from "./token-service";
-export class AuthService implements IAuthService {
+export class AuthService
+  extends BaseService<RefreshToken>
+  implements IAuthService
+{
   constructor(
     private userRepository: IUserRepository,
     private refreshTokenRepository: IRefreshTokenRepository,
     private otpVerificationRepository: IOtpVerificationRepository,
     private emailVerificationRepository: IEmailVerificationRepository,
-  ) {}
+  ) {
+    super(CollectionsManager.refreshCollection);
+  }
 
   async login(
     identifier: string | undefined,

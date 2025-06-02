@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
+import type { IRefreshTokenRepository } from "../interfaces/auth/repo/i-refresh-token-repository";
 import { CollectionsManager } from "../models/base/collection-manager";
-import type { IRefreshTokenRepository } from "../interfaces/auth/i-refresh-token-repository";
 import type { RefreshToken } from "../models/refresh-token";
 
 export class RefreshTokenRepository implements IRefreshTokenRepository {

@@ -1,5 +1,5 @@
 import type { ServerRequest } from "../config/interfaces/i-request";
-import type { IRequestBodyParser } from "../interfaces/user/i-crud-controller";
+import type { IRequestBodyParser } from "../interfaces/base/i-crud-controller";
 
 export class RequestBodyParser implements IRequestBodyParser {
   async parseRequestBody<U>(req: ServerRequest): Promise<U> {

@@ -17,12 +17,13 @@ import { getTokenFromHeaders } from "../utils/auth";
 import { ResponseHelper } from "../utils/response-helper";
 import { BaseController } from "./base/base-controller";
 
-class AuthController extends BaseController<RefreshToken> {
-  private authService: AuthService;
-
+class AuthController extends BaseController<RefreshToken, AuthService> {
   constructor() {
     super("/auth");
-    this.authService = new AuthService(
+  }
+
+  protected createService(): AuthService {
+    return new AuthService(
       new userRepository(),
       new RefreshTokenRepository(),
       new otpVerificationRepository(),
@@ -37,10 +38,12 @@ class AuthController extends BaseController<RefreshToken> {
   @Post("/login")
   async login(req: ServerRequest): Promise<Response> {
     try {
-      const body =
-        await this.parseRequestBody<OptionalUnlessRequiredId<User>>(req);
+      const body = await this.parseRequestBody<{
+        identifier: string;
+        password: string;
+      }>(req);
 
-      return this.authService.login(body.identifier, body.password);
+      return this.service.login(body.identifier, body.password);
     } catch (err) {
       return ResponseHelper.error(String(err));
     }
@@ -50,7 +53,7 @@ class AuthController extends BaseController<RefreshToken> {
   async logout(req: ServerRequest): Promise<Response> {
     try {
       const token = getTokenFromHeaders(req.headers);
-      return this.authService.logout(token);
+      return this.service.logout(token);
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }
@@ -60,7 +63,7 @@ class AuthController extends BaseController<RefreshToken> {
   async refreshToken(req: ServerRequest): Promise<Response> {
     try {
       const body = await this.parseRequestBody<{ refreshToken: string }>(req);
-      return this.authService.refreshToken(body.refreshToken);
+      return this.service.refreshToken(body.refreshToken);
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }
@@ -69,7 +72,7 @@ class AuthController extends BaseController<RefreshToken> {
   @Post("/send-otp/:email")
   async sendOtp(req: ServerRequest): Promise<Response> {
     try {
-      return this.authService.sendOtp(String(req.params.email));
+      return this.service.sendOtp(String(req.params.email));
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }
@@ -81,7 +84,7 @@ class AuthController extends BaseController<RefreshToken> {
       const body =
         await this.parseRequestBody<OptionalUnlessRequiredId<User>>(req);
 
-      return this.authService.verifyOtp(String(req.params.otp), body);
+      return this.service.verifyOtp(String(req.params.otp), body);
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }
@@ -89,7 +92,7 @@ class AuthController extends BaseController<RefreshToken> {
   @Post("/forget-password/:email")
   async forgetPassword(req: ServerRequest): Promise<Response> {
     try {
-      return this.authService.forgetPassword(String(req.params.email));
+      return this.service.forgetPassword(String(req.params.email));
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }
@@ -98,7 +101,7 @@ class AuthController extends BaseController<RefreshToken> {
   @Get("/validate-reset-token/:token")
   async validateResetToken(req: ServerRequest): Promise<Response> {
     try {
-      return this.authService.validateResetToken(String(req.params.token));
+      return this.service.validateResetToken(String(req.params.token));
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }
@@ -114,7 +117,7 @@ class AuthController extends BaseController<RefreshToken> {
       const token = String(req.params.token);
       const newPassword = body.password;
 
-      return this.authService.createNewPassword(token, newPassword);
+      return this.service.createNewPassword(token, newPassword);
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }
