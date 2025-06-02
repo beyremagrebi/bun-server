@@ -18,17 +18,20 @@ export abstract class BaseController<
   implements ICRUDController, IRequestBodyParser
 {
   protected collection: Collection<T>;
-  protected service: S;
+  protected service!: S;
   public basePath: string;
 
   constructor(basePath: string) {
     this.basePath = basePath;
     this.collection = this.initializeCollection();
-    this.service = this.createService();
   }
 
   protected abstract initializeCollection(): Collection<T>;
   protected abstract createService(): S;
+
+  protected initializeService(service: S) {
+    this.service = service;
+  }
 
   @Get("/")
   async getAll(req: RequestWithPagination): Promise<Response> {

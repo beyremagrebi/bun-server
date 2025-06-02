@@ -20,6 +20,7 @@ import { BaseController } from "./base/base-controller";
 class AuthController extends BaseController<RefreshToken, AuthService> {
   constructor() {
     super("/auth");
+    this.initializeService(this.createService());
   }
 
   protected createService(): AuthService {

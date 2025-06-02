@@ -22,6 +22,7 @@ class UserController extends BaseController<User, UserService> {
 
   constructor() {
     super("/user");
+    this.initializeService(this.createService());
   }
   protected initializeCollection(): Collection<User> {
     return CollectionsManager.userCollection;
