@@ -13,13 +13,6 @@ import { Get, Post, Put } from "../routes/router-manager";
 import { SkillService } from "../services/skill-service";
 import { ResponseHelper } from "../utils/response-helper";
 import { BaseController } from "./base/base-controller";
-interface SkillUploadPayload {
-  _id?: string;
-  categorie: string;
-  name: string;
-  level: string;
-  certificationFiles: File[];
-}
 
 export class SkillController extends BaseController<Skill, SkillService> {
   protected createService(): SkillService {
@@ -62,52 +55,10 @@ export class SkillController extends BaseController<Skill, SkillService> {
   async addManySkill(req: ServerRequest): Promise<Response> {
     try {
       const formData = (await req.formData()) as FormData;
-      const skills: SkillUploadPayload[] = [];
       const certifNamesList: string[][] = [];
 
       // Parse fields and build skills[]
-      for (const [key, value] of formData.entries()) {
-        const match = key.match(/^skills\[(\d+)]\[(\w+)](\[\])?$/);
-        if (!match) continue;
-
-        const index = parseInt(String(match[1]));
-        const field = match[2];
-        const isArray = !!match[3];
-
-        // Initialize if empty
-        if (!skills[index]) {
-          skills[index] = {
-            name: "",
-            categorie: "",
-            level: "",
-            certificationFiles: [],
-          };
-          certifNamesList[index] = [];
-        }
-
-        // Handle fields
-        if (field === "certifications" && isArray) {
-          if (
-            typeof value === "object" &&
-            value !== null &&
-            typeof (value as Blob).arrayBuffer === "function"
-          ) {
-            skills[index].certificationFiles.push(value as File);
-          }
-        } else if (
-          field === "certifNames" &&
-          isArray &&
-          typeof value === "string"
-        ) {
-          if (!certifNamesList[index]) continue;
-          certifNamesList[index].push(value);
-        } else if (!isArray && typeof value === "string") {
-          if (field === "name" || field === "categorie" || field === "level") {
-            skills[index][field] = value;
-          }
-        }
-      }
-
+      const body = await this.parseFormData<{ skills: Skill[] }>(formData);
       // Get userId from auth middleware
       if (!req.user || !req.user._id || !ObjectId.isValid(req.user._id)) {
         return ResponseHelper.error("Invalid or missing user ID");
@@ -116,7 +67,7 @@ export class SkillController extends BaseController<Skill, SkillService> {
       const userId = new ObjectId(req.user._id);
       const skillDocs: Skill[] = [];
 
-      for (const skill of skills) {
+      for (const skill of body.skills) {
         if (!skill) continue;
 
         skillDocs.push({
@@ -144,58 +95,8 @@ export class SkillController extends BaseController<Skill, SkillService> {
   async updateMany(req: ServerRequest): Promise<Response> {
     try {
       const formData = (await req.formData()) as FormData;
-      const skills: SkillUploadPayload[] = [];
+      const body = await this.parseFormData<{ skills: Skill[] }>(formData);
       const certifNamesList: string[][] = [];
-
-      // Parse fields and build skills[]
-      for (const [key, value] of formData.entries()) {
-        const match = key.match(/^skills\[(\d+)]\[(\w+)](\[\])?$/);
-        if (!match) continue;
-
-        const index = parseInt(String(match[1]));
-        const field = match[2];
-        const isArray = !!match[3];
-
-        // Initialize if empty
-        if (!skills[index]) {
-          skills[index] = {
-            _id: "",
-            name: "",
-            categorie: "",
-            level: "",
-            certificationFiles: [],
-          };
-          certifNamesList[index] = [];
-        }
-
-        // Handle fields
-        if (field === "certifications" && isArray) {
-          if (
-            typeof value === "object" &&
-            value !== null &&
-            typeof (value as Blob).arrayBuffer === "function"
-          ) {
-            skills[index].certificationFiles.push(value as File);
-          }
-        } else if (
-          field === "certifNames" &&
-          isArray &&
-          typeof value === "string"
-        ) {
-          if (!certifNamesList[index]) continue;
-          certifNamesList[index].push(value);
-        } else if (!isArray && typeof value === "string") {
-          if (
-            field === "_id" ||
-            field === "name" ||
-            field === "categorie" ||
-            field === "level"
-          ) {
-            skills[index][field] = value;
-          }
-        }
-      }
-
       // Get userId from auth middleware
       if (!req.user || !req.user._id || !ObjectId.isValid(req.user._id)) {
         return ResponseHelper.error("Invalid or missing user ID");
@@ -203,9 +104,9 @@ export class SkillController extends BaseController<Skill, SkillService> {
 
       const userId = new ObjectId(req.user._id);
       const skillDocs: Skill[] = [];
-      for (const skill of skills) {
+      for (const skill of body.skills) {
         if (!skill) {
-          return ResponseHelper.error("no no no");
+          return ResponseHelper.error("invalid data");
         }
 
         skillDocs.push({

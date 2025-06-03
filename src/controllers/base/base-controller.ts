@@ -95,11 +95,60 @@ export abstract class BaseController<
 
   async parseFormData<U>(formData: FormData): Promise<U> {
     try {
-      const formObject: Record<string, string> = {};
+      const result: Record<string, unknown> = {};
+
       for (const [key, value] of formData.entries()) {
-        formObject[key] = value;
+        const path = key
+          .replace(/\]/g, "") // remove closing brackets
+          .split(/\[|\./); // split by [ or .
+
+        let current: unknown = result;
+
+        for (let i = 0; i < path.length; i++) {
+          const part = path[i];
+          const isLast = i === path.length - 1;
+          const nextIsIndex = /^\d+$/.test(path[i + 1] || "");
+          const isArrayIndex = /^\d+$/.test(String(part));
+
+          if (isLast && part) {
+            if (Array.isArray(current)) {
+              (current as unknown[])[parseInt(part)] = value;
+            } else if (isArrayIndex) {
+              const index = parseInt(part);
+              if (!Array.isArray(current)) current = [];
+              (current as unknown[])[index] = value;
+            } else {
+              const obj = current as Record<string, unknown>;
+              if (obj[part] !== undefined) {
+                if (!Array.isArray(obj[part])) {
+                  obj[part] = [obj[part]];
+                }
+                (obj[part] as unknown[]).push(value);
+              } else {
+                obj[part] = value;
+              }
+            }
+          } else {
+            if (isArrayIndex) {
+              const index = parseInt(String(part));
+              if (!Array.isArray(current)) current = [];
+              const arr = current as unknown[];
+              if (!arr[index]) {
+                arr[index] = nextIsIndex ? [] : {};
+              }
+              current = arr[index];
+            } else {
+              const obj = current as Record<string, unknown>;
+              if (!obj[String(part)]) {
+                obj[String(part)] = nextIsIndex ? [] : {};
+              }
+              current = obj[String(part)];
+            }
+          }
+        }
       }
-      return formObject as unknown as U;
+
+      return result as U;
     } catch (err) {
       console.error("Error parsing form data:", err);
       throw new Error("Invalid form data format");

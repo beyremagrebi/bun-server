@@ -4,10 +4,11 @@ import type { BaseModel } from "./base/base-model";
 export interface Experience extends BaseModel {
   userId: ObjectId;
   post: string;
-  enterprise: string;
+  entreprise: string;
   place: string;
   startDate: Date;
   endDate: Date;
-  KeyAchievements: string;
+  KeyAchievements: string[];
   certificates: ObjectId[];
+  skills: ObjectId[];
 }
