@@ -5,24 +5,25 @@ export function createCorsResponse(response: Response): Response {
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, DELETE, PATCH, OPTIONS",
   );
-  headers.set("Access-Control-Allow-Headers", "Content-Type");
+  headers.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type,Authorization,ngrok-skip-browser-warning",
+  );
   headers.set("Content-Type", "application/json");
-  headers.set("ngrok-skip-browser-warning", "69420");
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
     headers,
   });
 }
-
 export function handleOptionsRequest(): Response {
   return new Response(null, {
     status: 204,
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type,Authorization",
-      "ngrok-skip-browser-warning": "69420",
+      "Access-Control-Allow-Headers":
+        "Content-Type,Authorization,ngrok-skip-browser-warning",
     },
   });
 }
