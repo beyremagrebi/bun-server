@@ -46,7 +46,6 @@ export async function handleFileUpload(
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      console.log(file);
       if (!(file instanceof File)) return null;
       if (!file.name?.trim()) return null;
 
@@ -61,7 +60,7 @@ export async function handleFileUpload(
 
       const safeFileName = baseFileName.endsWith(originalExtension)
         ? baseFileName
-        : baseFileName + originalExtension;
+        : baseFileName + i + originalExtension;
 
       let fullPath: string | undefined;
       if (writeToDisk) {

@@ -109,7 +109,11 @@ export class UserService extends BaseService<User> implements IUserService {
         }
         user.image = result.fileName;
       } else {
-        user.image = currentUser.image;
+        if (currentUser.image) {
+          deleteFiles(currentUser.image, storePath, currentUser._id);
+        }
+
+        user.image = "";
       }
     }
 
