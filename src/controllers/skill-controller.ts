@@ -6,13 +6,15 @@ import { paginationMiddleware } from "../middleware/pagination-middleware";
 import { CollectionsManager } from "../models/base/collection-manager";
 import type { Skill } from "../models/skill";
 import { CertificationRepository } from "../repositories/certification-repository";
-import { SkillRepository } from "../repositories/skill-repository";
+
+import { skillRepository } from "../repositories/skill-repository";
 import { userRepository } from "../repositories/user-repository";
-import { Get, Post } from "../routes/router-manager";
+import { Get, Post, Put } from "../routes/router-manager";
 import { SkillService } from "../services/skill-service";
 import { ResponseHelper } from "../utils/response-helper";
 import { BaseController } from "./base/base-controller";
 interface SkillUploadPayload {
+  _id?: string;
   categorie: string;
   name: string;
   level: string;
@@ -22,7 +24,7 @@ interface SkillUploadPayload {
 export class SkillController extends BaseController<Skill, SkillService> {
   protected createService(): SkillService {
     return new SkillService(
-      new SkillRepository(),
+      new skillRepository(),
       new userRepository(),
       new CertificationRepository(),
     );
@@ -129,6 +131,95 @@ export class SkillController extends BaseController<Skill, SkillService> {
       }
 
       return this.service.createManySkills(
+        skillDocs,
+        formData,
+        certifNamesList,
+      );
+    } catch (err) {
+      return ResponseHelper.serverError(`Failed to add skills: ${String(err)}`);
+    }
+  }
+
+  @Put("/update-many-skill", [authMiddleware])
+  async updateMany(req: ServerRequest): Promise<Response> {
+    try {
+      const formData = (await req.formData()) as FormData;
+      const skills: SkillUploadPayload[] = [];
+      const certifNamesList: string[][] = [];
+
+      // Parse fields and build skills[]
+      for (const [key, value] of formData.entries()) {
+        const match = key.match(/^skills\[(\d+)]\[(\w+)](\[\])?$/);
+        if (!match) continue;
+
+        const index = parseInt(String(match[1]));
+        const field = match[2];
+        const isArray = !!match[3];
+
+        // Initialize if empty
+        if (!skills[index]) {
+          skills[index] = {
+            _id: "",
+            name: "",
+            categorie: "",
+            level: "",
+            certificationFiles: [],
+          };
+          certifNamesList[index] = [];
+        }
+
+        // Handle fields
+        if (field === "certifications" && isArray) {
+          if (
+            typeof value === "object" &&
+            value !== null &&
+            typeof (value as Blob).arrayBuffer === "function"
+          ) {
+            skills[index].certificationFiles.push(value as File);
+          }
+        } else if (
+          field === "certifNames" &&
+          isArray &&
+          typeof value === "string"
+        ) {
+          if (!certifNamesList[index]) continue;
+          certifNamesList[index].push(value);
+        } else if (!isArray && typeof value === "string") {
+          if (
+            field === "_id" ||
+            field === "name" ||
+            field === "categorie" ||
+            field === "level"
+          ) {
+            skills[index][field] = value;
+          }
+        }
+      }
+
+      // Get userId from auth middleware
+      if (!req.user || !req.user._id || !ObjectId.isValid(req.user._id)) {
+        return ResponseHelper.error("Invalid or missing user ID");
+      }
+
+      const userId = new ObjectId(req.user._id);
+      const skillDocs: Skill[] = [];
+
+      for (const skill of skills) {
+        if (!skill) continue;
+        skillDocs.push({
+          _id: new ObjectId(skill._id),
+          userId,
+          name: skill.name,
+          categorie: skill.categorie,
+          level: skill.level,
+          certifications: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+
+      return this.service.updateManySkills(
+        userId,
         skillDocs,
         formData,
         certifNamesList,
