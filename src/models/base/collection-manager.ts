@@ -2,6 +2,7 @@ import type { Collection, MongoClient } from "mongodb";
 import { EnvLoader } from "../../config/env";
 import type { Certification } from "../certifications";
 import type { EmailVerificationToken } from "../email-verification-token";
+import type { Experience } from "../experience";
 import type { OtpVerification } from "../otp-verification";
 import type { Post } from "../post";
 import type { RefreshToken } from "../refresh-token";
@@ -18,6 +19,7 @@ export class CollectionsManager {
   static skillCollection: Collection<Skill>;
   static certificationCollection: Collection<Certification>;
   static userStrorageCollection: Collection<UserStorage>;
+  static experienceCollection: Collection<Experience>;
 
   static initializeCollections(client: MongoClient) {
     const db = client.db(EnvLoader.databaseName);
@@ -31,12 +33,6 @@ export class CollectionsManager {
     this.certificationCollection =
       db.collection<Certification>("certifications");
     this.userStrorageCollection = db.collection<UserStorage>("user-storage");
-  }
-
-  static get collections() {
-    return {
-      users: this.userCollection,
-      posts: this.postCollection,
-    };
+    this.experienceCollection = db.collection<Experience>("experiences");
   }
 }
