@@ -6,14 +6,22 @@ export async function syncUserStorageDelta(
   deltaBytes: number,
 ) {
   const id = typeof userId === "string" ? new ObjectId(userId) : userId;
-  const size = formatFileSize(deltaBytes);
-  await CollectionsManager.userStrorageCollection.findOneAndUpdate(
+  const now = new Date();
+  const result =
+    await CollectionsManager.userStrorageCollection.findOneAndUpdate(
+      { userId: id },
+      {
+        $inc: { usedStorage: deltaBytes },
+        $set: { updatedAt: now },
+      },
+      { upsert: true, returnDocument: "after" },
+    );
+  const totalUsed = result?.usedStorage ?? 0;
+  const readable = formatFileSize(totalUsed);
+
+  await CollectionsManager.userStrorageCollection.updateOne(
     { userId: id },
-    {
-      $inc: { usedStorage: deltaBytes },
-      $set: { updatedAt: new Date(), readableSize: size },
-    },
-    { upsert: true },
+    { $set: { readableSize: readable } },
   );
 }
 

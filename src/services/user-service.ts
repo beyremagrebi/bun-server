@@ -105,7 +105,7 @@ export class UserService extends BaseService<User> implements IUserService {
 
       if (result?.fileName) {
         if (currentUser.image) {
-          deleteFiles(currentUser.image, storePath);
+          deleteFiles(currentUser.image, storePath, currentUser._id);
         }
         user.image = result.fileName;
       } else {
@@ -126,11 +126,14 @@ export class UserService extends BaseService<User> implements IUserService {
 
       if (result?.fileName) {
         if (currentUser.cover) {
-          deleteFiles(currentUser.cover, storePath);
+          deleteFiles(currentUser.cover, storePath, currentUser._id);
         }
         user.cover = result.fileName;
       } else {
-        user.cover = currentUser.cover;
+        if (currentUser.cover) {
+          deleteFiles(currentUser.cover, storePath, currentUser._id);
+        }
+        user.cover = "";
       }
     }
 

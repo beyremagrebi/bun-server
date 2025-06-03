@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, unlinkSync } from "fs";
+import { existsSync, mkdirSync, statSync, unlinkSync } from "fs";
 import { join } from "path";
 // <-- you need to implement this
 import { ObjectId } from "mongodb"; // or mongoose.Types.ObjectId if using Mongoose
@@ -93,7 +93,6 @@ export async function handleFileUpload(
     const arrayBuffer = await file.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
     const originalExtension = getExtension(file.name);
-    console.log(file);
     const baseFileName =
       typeof options.fileName === "string"
         ? options.fileName
@@ -123,27 +122,37 @@ export async function handleFileUpload(
   }
 }
 
-export function deleteFiles(
+export async function deleteFiles(
   paths: string | string[] | undefined,
   basePath: string,
-): string[] {
+  userId?: string | ObjectId, // Pass userId to update storage
+): Promise<string[]> {
   if (!paths) return [];
 
   const fileList = Array.isArray(paths) ? paths : [paths];
   const deleted: string[] = [];
+  let totalFreedBytes = 0;
 
   for (const fileName of fileList) {
     const fullPath = join(basePath, fileName);
     if (existsSync(fullPath)) {
       try {
+        const stats = statSync(fullPath);
+        const fileSize = stats.size;
+
         unlinkSync(fullPath);
         deleted.push(fileName);
+        totalFreedBytes += fileSize;
       } catch (err) {
         console.error(`Failed to delete ${fileName}:`, err);
       }
     } else {
       console.warn(`File not found: ${fileName}`);
     }
+  }
+
+  if (userId && totalFreedBytes > 0) {
+    await syncUserStorageDelta(userId, -totalFreedBytes);
   }
 
   return deleted;
