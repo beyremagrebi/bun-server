@@ -200,40 +200,34 @@ export class SkillService extends BaseService<Skill> implements ISkillService {
 
     for (let i = 0; i < skills.length; i++) {
       const skillUpdate = skills[i];
-      console.log(skillUpdate);
       const certifNames = certifNamesList[i] || [];
 
-      if (!skillUpdate || !ObjectId.isValid(String(skillUpdate._id))) {
-        return ResponseHelper.error(
-          `Skill at index ${i} is invalid or missing _id`,
-        );
-      }
-
-      if (!ObjectId.isValid(skillUpdate.userId)) {
+      // Ensure userId is valid
+      if (skillUpdate?.userId && !ObjectId.isValid(skillUpdate.userId)) {
         return ResponseHelper.error(
           `Invalid userId for skill "${skillUpdate.name}"`,
         );
       }
 
-      const userId = new ObjectId(String(skillUpdate.userId));
+      const userId = new ObjectId(String(skillUpdate?.userId));
       const user = await this.userRepository.findById(userId, 0);
       if (!user) {
         return ResponseHelper.error(
-          `User not found for skill "${skillUpdate.name}"`,
+          `User not found for skill "${skillUpdate?.name}"`,
         );
       }
 
       const storePath = `${UPLOAD_PATHS.images}-${userId}/${UPLOAD_PATHS.cerifications}`;
       const fieldName = `skills[${i}][certifications]`;
-      const existingSkill = await this.skillRepository.findById(
-        skillUpdate._id,
-      );
-      if (!existingSkill) {
-        return ResponseHelper.error(
-          `Skill not found with ID: ${skillUpdate._id}`,
-        );
+
+      let existingSkill = null;
+      if (skillUpdate?._id && ObjectId.isValid(String(skillUpdate?._id))) {
+        existingSkill = await this.skillRepository.findById(skillUpdate._id);
       }
+
+      // Delete old certifications if existing
       if (
+        existingSkill &&
         Array.isArray(existingSkill.certifications) &&
         existingSkill.certifications.length > 0
       ) {
@@ -244,10 +238,14 @@ export class SkillService extends BaseService<Skill> implements ISkillService {
           await this.certificationRepository.deleteOne(certifId);
         }
       }
+
       const updatedSkill: Skill = {
-        ...existingSkill,
-        name: skillUpdate.name,
-        level: skillUpdate.level,
+        _id: skillUpdate?._id,
+        userId,
+        categorie: skillUpdate?.categorie ?? "",
+        name: skillUpdate?.name ?? "",
+        level: skillUpdate?.level ?? "",
+        createdAt: existingSkill?.createdAt || new Date(),
         updatedAt: new Date(),
         certifications: [],
       };
@@ -284,7 +282,7 @@ export class SkillService extends BaseService<Skill> implements ISkillService {
         } else {
           updatedSkill.certifications = [];
         }
-      } else {
+      } else if (existingSkill) {
         updatedSkill.certifications = existingSkill.certifications;
       }
 

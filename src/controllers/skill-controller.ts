@@ -203,11 +203,13 @@ export class SkillController extends BaseController<Skill, SkillService> {
 
       const userId = new ObjectId(req.user._id);
       const skillDocs: Skill[] = [];
-
       for (const skill of skills) {
-        if (!skill) continue;
+        if (!skill) {
+          return ResponseHelper.error("no no no");
+        }
+
         skillDocs.push({
-          _id: new ObjectId(skill._id),
+          _id: !skill._id ? new ObjectId() : new ObjectId(skill._id),
           userId,
           name: skill.name,
           categorie: skill.categorie,
@@ -225,7 +227,9 @@ export class SkillController extends BaseController<Skill, SkillService> {
         certifNamesList,
       );
     } catch (err) {
-      return ResponseHelper.serverError(`Failed to add skills: ${String(err)}`);
+      return ResponseHelper.serverError(
+        `Failed to updated skills: ${String(err)}`,
+      );
     }
   }
 }
