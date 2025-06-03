@@ -7,7 +7,7 @@ export function createCorsResponse(response: Response): Response {
   );
   headers.set("Access-Control-Allow-Headers", "Content-Type");
   headers.set("Content-Type", "application/json");
-
+  headers.set("ngrok-skip-browser-warning", "69420");
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
@@ -22,6 +22,7 @@ export function handleOptionsRequest(): Response {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type,Authorization",
+      "ngrok-skip-browser-warning": "69420",
     },
   });
 }
