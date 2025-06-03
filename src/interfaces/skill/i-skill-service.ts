@@ -6,4 +6,10 @@ export interface ISkillService {
     formData: FormData,
     certifName: string[],
   ): Promise<Response>;
+
+  createManySkills(
+    skills: Skill[],
+    formData: FormData,
+    certifNamesList: string[][],
+  ): Promise<Response>;
 }
