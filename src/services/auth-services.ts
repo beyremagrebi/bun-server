@@ -181,87 +181,66 @@ export class AuthService
   }
 
   async forgetPassword(email: string): Promise<Response> {
-    try {
-      const user = await this.userRepository.findByEmail(email);
-      if (!user) {
-        return ResponseHelper.error("User not found", 404);
-      }
-
-      const rawToken = crypto.randomBytes(32).toString("hex");
-      const hashedToken = crypto
-        .createHash("sha256")
-        .update(rawToken)
-        .digest("hex");
-      const expiresAt = new Date(Date.now() + EnvLoader.resetTokenExpiry); // From .env
-
-      await this.emailVerificationRepository.deleteAll(user._id); // Delete old tokens
-
-      const tokenDoc: EmailVerificationToken = {
-        userId: user._id,
-        tokenHash: hashedToken,
-        expiresAt,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      await this.emailVerificationRepository.create(tokenDoc);
-
-      const resetLink = `${EnvLoader.frontUrl}/reset-password/${rawToken}`;
-      const { subject, text, html } = getForgotPasswordEmailContent(resetLink);
-      await sendEmail({ to: email, subject, text, html });
-
-      return ResponseHelper.success("Password reset link sent to your email.");
-    } catch (err) {
-      return ResponseHelper.serverError(String(err));
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      return ResponseHelper.error("User not found", 404);
     }
+
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
+    const expiresAt = new Date(Date.now() + EnvLoader.resetTokenExpiry); // From .env
+
+    await this.emailVerificationRepository.deleteAll(user._id); // Delete old tokens
+
+    const tokenDoc: EmailVerificationToken = {
+      userId: user._id,
+      tokenHash: hashedToken,
+      expiresAt,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    await this.emailVerificationRepository.create(tokenDoc);
+
+    const resetLink = `${EnvLoader.frontUrl}/reset-password/${rawToken}`;
+    const { subject, text, html } = getForgotPasswordEmailContent(resetLink);
+    await sendEmail({ to: email, subject, text, html });
+
+    return ResponseHelper.success("Password reset link sent to your email.");
   }
 
   async createNewPassword(
     token: string,
     newPassword: string,
   ): Promise<Response> {
-    try {
-      const hashedToken = crypto
-        .createHash("sha256")
-        .update(token)
-        .digest("hex");
-      const tokenToVerfi =
-        await this.emailVerificationRepository.findByTokenHash(hashedToken);
-      if (!tokenToVerfi) {
-        return ResponseHelper.error("Invalid or expired reset token", 400);
-      }
-      if (tokenToVerfi.expiresAt < new Date()) {
-        return ResponseHelper.error("Reset token has expired", 410);
-      }
-      const hashPassword = await Bun.password.hash(newPassword);
-      await this.userRepository.changePassword(
-        tokenToVerfi.userId,
-        hashPassword,
-      );
-      await this.emailVerificationRepository.deleteAll(tokenToVerfi.userId);
-
-      return ResponseHelper.success("Password Change Successfuly");
-    } catch (err) {
-      return ResponseHelper.serverError(String(err));
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const tokenToVerfi =
+      await this.emailVerificationRepository.findByTokenHash(hashedToken);
+    if (!tokenToVerfi) {
+      return ResponseHelper.error("Invalid or expired reset token", 400);
     }
+    if (tokenToVerfi.expiresAt < new Date()) {
+      return ResponseHelper.error("Reset token has expired", 410);
+    }
+    const hashPassword = await Bun.password.hash(newPassword);
+    await this.userRepository.changePassword(tokenToVerfi.userId, hashPassword);
+    await this.emailVerificationRepository.deleteAll(tokenToVerfi.userId);
+
+    return ResponseHelper.success("Password Change Successfuly");
   }
 
   async validateResetToken(token: string): Promise<Response> {
-    try {
-      const hashedToken = crypto
-        .createHash("sha256")
-        .update(token)
-        .digest("hex");
-      const tokenToVerfi =
-        await this.emailVerificationRepository.findByTokenHash(hashedToken);
-      if (!tokenToVerfi) {
-        return ResponseHelper.error("Invalid or expired reset token", 400);
-      }
-      if (tokenToVerfi.expiresAt < new Date()) {
-        return ResponseHelper.error("Reset token has expired", 410);
-      }
-      return ResponseHelper.success("Valid reset token");
-    } catch (err) {
-      return ResponseHelper.serverError(String(err));
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const tokenToVerfi =
+      await this.emailVerificationRepository.findByTokenHash(hashedToken);
+    if (!tokenToVerfi) {
+      return ResponseHelper.error("Invalid or expired reset token", 400);
     }
+    if (tokenToVerfi.expiresAt < new Date()) {
+      return ResponseHelper.error("Reset token has expired", 410);
+    }
+    return ResponseHelper.success("Valid reset token");
   }
 }

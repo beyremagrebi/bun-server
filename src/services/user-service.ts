@@ -69,80 +69,72 @@ export class UserService extends BaseService<User> implements IUserService {
     user: User,
     formData: FormData,
   ): Promise<Response> {
-    try {
-      const userId = req.user?._id;
-      const storePath = `${UPLOAD_PATHS.images}-${userId}`;
+    const userId = req.user?._id;
+    const storePath = `${UPLOAD_PATHS.images}-${userId}`;
 
-      if (user.userName) {
-        const existingUser = await this.userRepository.findByUsername(
-          user.userName,
-        );
-        if (
-          existingUser &&
-          existingUser._id?.toString() !== userId?.toString()
-        ) {
-          return ResponseHelper.error("Username already exists", 400);
-        }
+    if (user.userName) {
+      const existingUser = await this.userRepository.findByUsername(
+        user.userName,
+      );
+      if (existingUser && existingUser._id?.toString() !== userId?.toString()) {
+        return ResponseHelper.error("Username already exists", 400);
       }
-      if (user.email) {
-        const existingUser = await this.userRepository.findByEmail(user.email);
-        if (
-          existingUser &&
-          existingUser._id?.toString() !== userId?.toString()
-        ) {
-          return ResponseHelper.error("email already exists", 400);
-        }
-      }
-
-      const currentUser = await this.userRepository.findById(userId, 0);
-      if (!currentUser) {
-        return ResponseHelper.error("User not found", 404);
-      }
-
-      // Handle profile image update
-      if (formData.has("image")) {
-        const result = (await handleFileUpload(formData, {
-          fieldName: "image",
-          storePath,
-          fileName: new Date().getTime().toString(),
-          multiple: false,
-          writeToDisk: true,
-        })) as UploadResult;
-
-        if (result?.fileName) {
-          if (currentUser.image) {
-            deleteFiles(currentUser.image, storePath);
-          }
-          user.image = result.fileName;
-        } else {
-          user.image = currentUser.image;
-        }
-      }
-
-      // Handle cover image update
-      if (formData.has("cover")) {
-        const result = (await handleFileUpload(formData, {
-          fieldName: "cover",
-          storePath,
-          fileName: new Date().getTime().toString() + "_cover",
-          multiple: false,
-          writeToDisk: true,
-        })) as UploadResult;
-
-        if (result?.fileName) {
-          if (currentUser.cover) {
-            deleteFiles(currentUser.cover, storePath);
-          }
-          user.cover = result.fileName;
-        } else {
-          user.cover = currentUser.cover;
-        }
-      }
-
-      const updatedUser = await this.userRepository.updateProfile(userId, user);
-      return ResponseHelper.success(updatedUser);
-    } catch (error) {
-      return ResponseHelper.serverError(String(error));
     }
+    if (user.email) {
+      const existingUser = await this.userRepository.findByEmail(user.email);
+      if (existingUser && existingUser._id?.toString() !== userId?.toString()) {
+        return ResponseHelper.error("email already exists", 400);
+      }
+    }
+
+    const currentUser = await this.userRepository.findById(userId, 0);
+    if (!currentUser) {
+      return ResponseHelper.error("User not found", 404);
+    }
+
+    // Handle profile image update
+    if (formData.has("image")) {
+      const result = (await handleFileUpload(formData, {
+        fieldName: "image",
+        storePath,
+        fileName: new Date().getTime().toString(),
+        multiple: false,
+        writeToDisk: true,
+        userId: userId,
+      })) as UploadResult;
+
+      if (result?.fileName) {
+        if (currentUser.image) {
+          deleteFiles(currentUser.image, storePath);
+        }
+        user.image = result.fileName;
+      } else {
+        user.image = currentUser.image;
+      }
+    }
+
+    // Handle cover image update
+    if (formData.has("cover")) {
+      const result = (await handleFileUpload(formData, {
+        fieldName: "cover",
+        storePath,
+        fileName: new Date().getTime().toString() + "_cover",
+        multiple: false,
+        writeToDisk: true,
+        userId: userId,
+      })) as UploadResult;
+
+      if (result?.fileName) {
+        if (currentUser.cover) {
+          deleteFiles(currentUser.cover, storePath);
+        }
+        user.cover = result.fileName;
+      } else {
+        user.cover = currentUser.cover;
+      }
+    }
+
+    const updatedUser = await this.userRepository.updateProfile(userId, user);
+    return ResponseHelper.success(updatedUser);
   }
 }

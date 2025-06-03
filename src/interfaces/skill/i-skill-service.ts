@@ -1,3 +1,9 @@
+import type { Skill } from "../../models/skill";
+
 export interface ISkillService {
-  createSkill(): Promise<Response>;
+  createOneSkill(
+    skill: Skill,
+    formData: FormData,
+    certifName: string[],
+  ): Promise<Response>;
 }

@@ -1,11 +1,15 @@
 import { existsSync, mkdirSync, unlinkSync } from "fs";
-import { join } from "path"; // <-- add path join import
+import { join } from "path";
+// <-- you need to implement this
+import { ObjectId } from "mongodb"; // or mongoose.Types.ObjectId if using Mongoose
+import { syncUserStorageDelta } from "./asyn-user-storage";
 
 export interface UploadResult {
   buffer: Uint8Array;
   fileName: string;
   mimeType: string;
-  fullPath?: string; // new optional prop with full file path
+  fullPath?: string;
+  size?: number;
 }
 
 interface HandleFileUploadOptions {
@@ -13,7 +17,8 @@ interface HandleFileUploadOptions {
   storePath: string;
   fileName?: string | ((index: number, originalName: string) => string);
   multiple?: boolean;
-  writeToDisk?: boolean; // new option to control writing to disk
+  writeToDisk?: boolean;
+  userId?: string | ObjectId; // <-- new optional field
 }
 
 function getExtension(filename: string): string {
@@ -30,30 +35,25 @@ export async function handleFileUpload(
   }
 
   const writeToDisk = options.writeToDisk ?? false;
+  const userId = options.userId?.toString(); // normalize
 
   if (options.multiple === true) {
     const files = formData.getAll(options.fieldName);
-
-    if (!files.length) {
-      return null; // No files found for the specified field
-    }
+    if (!files.length) return null;
 
     const results: UploadResult[] = [];
+    let totalBytes = 0;
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (!(file instanceof File)) {
-        return null;
-      }
-
-      if (!file.name || file.name.trim() === "") {
-        return null;
-      }
+      console.log(file);
+      if (!(file instanceof File)) return null;
+      if (!file.name?.trim()) return null;
 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = new Uint8Array(arrayBuffer);
-
       const originalExtension = getExtension(file.name);
+
       const baseFileName =
         typeof options.fileName === "function"
           ? options.fileName(i, file.name)
@@ -74,25 +74,26 @@ export async function handleFileUpload(
         fileName: safeFileName,
         mimeType: file.type,
         fullPath,
+        size: buffer.length,
       });
+
+      totalBytes += buffer.length;
+    }
+
+    if (writeToDisk && userId && totalBytes > 0) {
+      await syncUserStorageDelta(userId, totalBytes);
     }
 
     return results;
   } else {
     const file = formData.get(options.fieldName);
-
-    if (!file || !(file instanceof File)) {
-      return null;
-    }
-
-    if (!file.name || file.name.trim() === "") {
-      return null;
-    }
+    if (!file || !(file instanceof File)) return null;
+    if (!file.name?.trim()) return null;
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
-
     const originalExtension = getExtension(file.name);
+    console.log(file);
     const baseFileName =
       typeof options.fileName === "string"
         ? options.fileName
@@ -108,11 +109,16 @@ export async function handleFileUpload(
       await Bun.write(fullPath, buffer);
     }
 
+    if (writeToDisk && userId && buffer.length > 0) {
+      await syncUserStorageDelta(userId, buffer.length);
+    }
+
     return {
       buffer,
       fileName: safeFileName,
       mimeType: file.type,
       fullPath,
+      size: buffer.length,
     };
   }
 }

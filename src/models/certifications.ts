@@ -1,10 +1,8 @@
 import type { ObjectId } from "mongodb";
 import type { BaseModel } from "./base/base-model";
 
-export interface Skill extends BaseModel {
+export interface Certification extends BaseModel {
   userId: ObjectId;
-  categorie: string; // enum
   name: string;
-  level: string; // enum
-  certifications: ObjectId[];
+  file?: string;
 }
