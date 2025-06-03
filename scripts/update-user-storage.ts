@@ -35,9 +35,7 @@ async function calculateDirectorySize(dir: string): Promise<number> {
 
 async function updateAllUserStorage() {
   try {
-    // Initialize DB connection
     await ConnectionDatabase.connect(EnvLoader.uri);
-
     const usersCollection = CollectionsManager.userCollection;
     const storageCollection = CollectionsManager.userStrorageCollection;
 

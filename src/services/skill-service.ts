@@ -225,7 +225,6 @@ export class SkillService extends BaseService<Skill> implements ISkillService {
         existingSkill = await this.skillRepository.findById(skillUpdate._id);
       }
 
-      // Delete old certifications if existing
       if (
         existingSkill &&
         Array.isArray(existingSkill.certifications) &&
