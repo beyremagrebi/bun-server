@@ -4,13 +4,14 @@ import { CollectionsManager } from "../models/base/collection-manager";
 import type { Skill } from "../models/skill";
 
 export class skillRepository implements ISkillRepository {
+  private collection = CollectionsManager.skillCollection;
+
   async findById(skillId: ObjectId): Promise<Skill | null> {
     return await this.collection.findOne({ _id: skillId });
   }
   async findByName(skillName: string): Promise<Skill | null> {
     return await this.collection.findOne({ name: skillName });
   }
-  private collection = CollectionsManager.skillCollection;
 
   async createSkill(skill: Skill): Promise<void> {
     await this.collection.insertOne(skill);
