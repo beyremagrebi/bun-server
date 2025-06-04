@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+import { UPLOAD_PATHS } from "../src/config/config";
 import { ConnectionDatabase } from "../src/config/connection-database";
 import { EnvLoader } from "../src/config/env";
 import { Logger } from "../src/config/logger";
@@ -51,8 +52,7 @@ async function updateAllUserStorage() {
       const userId = user._id;
       const uploadPath = path.join(
         process.cwd(),
-        "uploads",
-        `images-${userId.toString()}`,
+        `${UPLOAD_PATHS.images}-${userId.toString()}`,
       );
 
       const usedStorage = await calculateDirectorySize(uploadPath);
