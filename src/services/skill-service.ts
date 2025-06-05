@@ -242,6 +242,7 @@ export class SkillService extends BaseService<Skill> implements ISkillService {
         _id: skillUpdate?._id,
         userId,
         categorie: skillUpdate?.categorie ?? "",
+        percentage: skillUpdate?.percentage ?? 0,
         name: skillUpdate?.name ?? "",
         level: skillUpdate?.level ?? "",
         createdAt: existingSkill?.createdAt || new Date(),
