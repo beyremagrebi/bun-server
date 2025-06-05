@@ -33,7 +33,15 @@ export class SkillController extends BaseController<Skill, SkillService> {
   @Get("/getAll", [authMiddleware, paginationMiddleware])
   async getAll(req: RequestWithPagination): Promise<Response> {
     try {
-      return super.getAll(req);
+      return super.getAll(req, [
+        {
+          from: "certifications",
+          localField: "certifications",
+          foreignField: "_id",
+          as: "certifications",
+          unwind: true,
+        },
+      ]);
     } catch (err) {
       return ResponseHelper.serverError(String(err));
     }

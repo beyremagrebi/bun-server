@@ -8,7 +8,10 @@ import type {
 import { autoPaginateResponse } from "../../middleware/pagination-middleware";
 import type { BaseModel } from "../../models/base/base-model";
 import { Get, Post } from "../../routes/router-manager";
-import type { BaseService } from "../../services/base/base-service";
+import type {
+  BaseService,
+  LookupConfig,
+} from "../../services/base/base-service";
 import { ResponseHelper } from "../../utils/response-helper";
 
 export abstract class BaseController<
@@ -34,12 +37,16 @@ export abstract class BaseController<
   }
 
   @Get("/")
-  async getAll(req: RequestWithPagination): Promise<Response> {
+  async getAll(
+    req: RequestWithPagination,
+    lookups?: LookupConfig[],
+  ): Promise<Response> {
     try {
       const pagination = req.pagination;
       const dataPromise = this.service.getAll(
         pagination?.skip,
         pagination?.take,
+        lookups,
       );
       const totalCount = this.service.countAll();
       return autoPaginateResponse(req, dataPromise, totalCount);

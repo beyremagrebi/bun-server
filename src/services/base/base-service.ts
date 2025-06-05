@@ -1,11 +1,19 @@
 import type {
   Collection,
+  Document,
   Filter,
   ObjectId,
   OptionalUnlessRequiredId,
   WithId,
 } from "mongodb";
 import type { BaseModel } from "../../models/base/base-model";
+export interface LookupConfig {
+  from: string; // Target collection name
+  localField: string; // Field in the current collection
+  foreignField: string; // Field in the target collection
+  as: string; // Output field name
+  unwind?: boolean; // Optional: Unwind joined array
+}
 
 export class BaseService<T extends BaseModel> {
   protected collection: Collection<T>;
@@ -14,12 +22,42 @@ export class BaseService<T extends BaseModel> {
     this.collection = collection;
   }
 
-  async getAll(skip?: number, limit?: number): Promise<WithId<T>[]> {
-    let cursor = this.collection.find();
-    if (typeof skip === "number" && typeof limit === "number") {
-      cursor = cursor.skip(skip).limit(limit);
+  async getAll(
+    skip?: number,
+    limit?: number,
+    lookups?: LookupConfig[],
+  ): Promise<WithId<T>[]> {
+    const pipeline: Document[] = [];
+
+    // Add lookup stages dynamically
+    if (lookups) {
+      for (const lookup of lookups) {
+        pipeline.push({
+          $lookup: {
+            from: lookup.from,
+            localField: lookup.localField,
+            foreignField: lookup.foreignField,
+            as: lookup.as,
+          },
+        });
+
+        if (lookup.unwind) {
+          pipeline.push({
+            $unwind: {
+              path: `$${lookup.as}`,
+              preserveNullAndEmptyArrays: true,
+            },
+          });
+        }
+      }
     }
-    return cursor.toArray();
+
+    if (typeof skip === "number") pipeline.push({ $skip: skip });
+    if (typeof limit === "number") pipeline.push({ $limit: limit });
+
+    return this.collection.aggregate(pipeline).toArray() as Promise<
+      WithId<T>[]
+    >;
   }
 
   async countAll(): Promise<number> {
