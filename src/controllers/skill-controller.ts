@@ -39,6 +39,7 @@ export class SkillController extends BaseController<Skill, SkillService> {
           localField: "certifications",
           foreignField: "_id",
           as: "certifications",
+          select: ["_id", "file", "name"],
           unwind: false,
         },
       ]);

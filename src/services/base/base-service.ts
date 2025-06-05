@@ -13,6 +13,7 @@ export interface LookupConfig {
   foreignField: string; // Field in the target collection
   as: string; // Output field name
   unwind?: boolean; // Optional: Unwind joined array
+  select?: string[];
 }
 
 export class BaseService<T extends BaseModel> {
@@ -29,7 +30,6 @@ export class BaseService<T extends BaseModel> {
   ): Promise<WithId<T>[]> {
     const pipeline: Document[] = [];
 
-    // Add lookup stages dynamically
     if (lookups) {
       for (const lookup of lookups) {
         pipeline.push({
@@ -48,6 +48,19 @@ export class BaseService<T extends BaseModel> {
               preserveNullAndEmptyArrays: true,
             },
           });
+        }
+
+        if (lookup.select) {
+          // Keep only selected fields in the joined doc
+          const projectedFields: Record<string, unknown> = {};
+          for (const field of lookup.select) {
+            projectedFields[`${lookup.as}.${field}`] = 1;
+          }
+
+          // Always preserve root-level fields
+          projectedFields["_id"] = 1;
+
+          pipeline.push({ $project: projectedFields });
         }
       }
     }

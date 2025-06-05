@@ -39,7 +39,7 @@ export abstract class BaseController<
   @Get("/")
   async getAll(
     req: RequestWithPagination,
-    lookups?: LookupConfig[],
+    lookups?: LookupConfig<T>[],
   ): Promise<Response> {
     try {
       const pagination = req.pagination;
