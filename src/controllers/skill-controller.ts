@@ -39,7 +39,7 @@ export class SkillController extends BaseController<Skill, SkillService> {
           localField: "certifications",
           foreignField: "_id",
           as: "certifications",
-          unwind: true,
+          unwind: false,
         },
       ]);
     } catch (err) {
