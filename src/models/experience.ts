@@ -8,6 +8,7 @@ export interface Experience extends BaseModel {
   place: string;
   startDate: Date;
   endDate: Date;
+  currentPost: boolean;
   KeyAchievements: string[];
   certificates: ObjectId[];
   skills: ObjectId[];

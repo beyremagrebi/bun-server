@@ -1,5 +1,6 @@
 import type { Experience } from "../../models/experience";
 
 export interface IExerienceRepository {
-  addExperience(experinec: Experience): Promise<void>;
+  addExperience(experience: Experience): Promise<void>;
+  updatedExperience(experience: Experience): Promise<void>;
 }

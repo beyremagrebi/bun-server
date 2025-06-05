@@ -75,6 +75,7 @@ export class SkillController extends BaseController<Skill, SkillService> {
           name: skill.name,
           categorie: skill.categorie,
           level: skill.level,
+          percentage: skill.percentage,
           certifications: [],
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -91,7 +92,7 @@ export class SkillController extends BaseController<Skill, SkillService> {
     }
   }
 
-  @Put("/update-many-skill", [authMiddleware])
+  @Put("/update-many-skill")
   async updateMany(req: ServerRequest): Promise<Response> {
     try {
       const formData = (await req.formData()) as FormData;
@@ -101,7 +102,6 @@ export class SkillController extends BaseController<Skill, SkillService> {
       if (!req.user || !req.user._id || !ObjectId.isValid(req.user._id)) {
         return ResponseHelper.error("Invalid or missing user ID");
       }
-
       const userId = new ObjectId(req.user._id);
       const skillDocs: Skill[] = [];
       for (const skill of body.skills) {
@@ -115,6 +115,7 @@ export class SkillController extends BaseController<Skill, SkillService> {
           name: skill.name,
           categorie: skill.categorie,
           level: skill.level,
+          percentage: skill.percentage,
           certifications: [],
           createdAt: new Date(),
           updatedAt: new Date(),

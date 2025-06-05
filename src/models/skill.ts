@@ -6,5 +6,6 @@ export interface Skill extends BaseModel {
   categorie: string; // enum
   name: string;
   level: string; // enum
+  percentage: number;
   certifications: ObjectId[];
 }

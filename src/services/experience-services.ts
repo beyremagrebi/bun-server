@@ -20,11 +20,20 @@ export class ExperienceServices
   ) {
     super(CollectionsManager.experienceCollection);
   }
+
   async addExperience(
     userId: ObjectId,
     experience: Experience,
     formData: FormData,
   ): Promise<Response> {
+    if (
+      !experience.place ||
+      experience.post ||
+      experience.entreprise ||
+      experience.startDate
+    ) {
+      return ResponseHelper.error("complete all");
+    }
     const storePath = `${UPLOAD_PATHS.images}-${userId}/${UPLOAD_PATHS.cerifications}`;
 
     if (formData.has("certificates")) {
@@ -57,7 +66,53 @@ export class ExperienceServices
         }
       }
     }
+    experience.startDate = new Date(experience.startDate);
+    experience.endDate = new Date(experience.endDate);
+    experience.currentPost = Boolean(experience.currentPost);
     await this.experienceRepository.addExperience(experience);
+
+    return ResponseHelper.success(experience);
+  }
+
+  async updateExperience(
+    userId: ObjectId,
+    experience: Experience,
+    formData: FormData,
+  ): Promise<Response> {
+    const storePath = `${UPLOAD_PATHS.images}-${userId}/${UPLOAD_PATHS.cerifications}`;
+
+    if (formData.has("certificates")) {
+      const uploadResults = await handleFileUpload(formData, {
+        fieldName: "certificates",
+        storePath,
+        fileName: new Date().getTime().toString(),
+        multiple: true,
+        writeToDisk: true,
+        userId: userId,
+      });
+
+      if (Array.isArray(uploadResults) && uploadResults.length > 0) {
+        experience.certificates = []; // Replace old certificates
+        for (let i = 0; i < uploadResults.length; i++) {
+          const result = uploadResults[i];
+          const name = `Certification-${experience.post} ${i + 1}`;
+
+          const certification: Certification = {
+            userId: userId,
+            file: result?.fileName || undefined,
+            name: name,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+
+          const savedCertif =
+            await this.certificationRepository.addCertification(certification);
+          experience.certificates.push(savedCertif._id!);
+        }
+      }
+    }
+
+    await this.experienceRepository.updatedExperience(experience);
 
     return ResponseHelper.success(experience);
   }

@@ -4,7 +4,13 @@ import type { Experience } from "../../models/experience";
 export interface IExperienceService {
   addExperience(
     userId: ObjectId,
-    experinec: Experience,
+    experience: Experience,
+    formData: FormData,
+  ): Promise<Response>;
+
+  updateExperience(
+    userId: ObjectId,
+    experience: Experience,
     formData: FormData,
   ): Promise<Response>;
 }
