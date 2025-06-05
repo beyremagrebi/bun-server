@@ -32,6 +32,8 @@ export class skillRepository implements ISkillRepository {
             $set: {
               name: skill.name,
               level: skill.level,
+              percentage: skill.percentage,
+              categorie: skill.categorie,
               certifications: skill.certifications,
               userId,
               updatedAt: new Date(),
